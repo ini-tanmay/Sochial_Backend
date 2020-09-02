@@ -59,6 +59,6 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.logger.debug("Starting Flask Server")
     from api import *
-    app.run(host='192.168.1.69', port=8000, debug=False,use_reloader=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
