@@ -60,5 +60,5 @@ def hello():
 
 if __name__ == '__main__':
     from api import *
-    app.run(threaded=True, port=5000)
+    app.run(threaded=True)
 
