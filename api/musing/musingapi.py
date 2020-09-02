@@ -11,7 +11,7 @@ class Musing(Resource):
 
     def post(self):
         musingDict = request.get_json(force=True)
-        doc_id = self.commentDbRef.insert_one(musingDict).inserted_id
+        doc_id = self.dbRef.insert_one(musingDict).inserted_id
         return {'id': doc_id}, 200
 
     def get(self):
