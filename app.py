@@ -20,46 +20,14 @@ class MyConfig(object):
 # get poems by userID
 # get poem by poemID
 
-
-
 app = Flask(__name__)
 DB_URI = "mongodb+srv://sochial:voltairemensutrabhai@cluster0.7lovb.mongodb.net/gigat?retryWrites=true&w=majority"
-
 app.config['MONGO_DBNAME'] = 'gigat'
 app.config['MONGO_URI'] = DB_URI
 app.json_encoder = JsonEncoder
 app.config.from_object(MyConfig)
 # MyConfig. (app)
 mongo = PyMongo(app)
-
-
-@app.route('/users/<userID>')
-def get_user_by_userID(userID):
-    users = mongo.db.users
-    user = users.find_one({'_id':(userID)})
-    #gets json and converts it to dict
-    app.logger.info(user)
-    app.logger.info(type(user))
-    if user is not None:
-        output = json.dumps(user)
-    else:
-        output = {'result':'no results lol'}
-    return output
-
-
-@app.route('/users', methods=['POST'])
-def add_user():
-    users=mongo.db.users
-    req_data = request.get_json(force=True)
-    #gets json and converts it to dict
-    app.logger.info('--------------')
-    app.logger.info(req_data)
-    app.logger.info(type(req_data))
-    app.logger.info('--------------')
-    users.insert_one(req_data)
-    #check if correct
-    new_framework = users.find_one({'_id':req_data['_id']})
-    return jsonify({'result': new_framework})
 
 #
 # {
@@ -69,22 +37,20 @@ def add_user():
 #     "name": "name"
 # }
 
-
 # userID = request.args['username']
 # bio = request.args['bio']
 # fcm
 # userID = request.args['name']
 # websiteLink = request.args['websiteLink']
 
-@app.route('/users')
-def get_all_users():
+@app.route('/api/v1.0/users/username/<string:username>')
+def is_user_taken(username):
     users = mongo.db.users
-    output = []
-    for q in users.find():
-        app.logger.info(type(q))
-        app.logger.info(q)
-        output.append(q)
-    return jsonify(output)
+    user = users.find_one({'usern': username})
+    if user is None:
+        return jsonify(False)
+    else:
+        return jsonify(True)
 
 
 @app.route('/')

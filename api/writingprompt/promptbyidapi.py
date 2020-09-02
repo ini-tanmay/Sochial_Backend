@@ -5,19 +5,19 @@ import pymongo
 from datetime import timezone
 
 
-class PoemByID(Resource):
+class PromptByID(Resource):
 
     def __init__(self):
-        self.dbRef = mongo.db.poems
+        self.dbRef = mongo.db.prompts
 
-    def get(self, poemID):
-        poem = self.dbRef.find_one({'_id': ObjectId(poemID)})
-        poem['timeStamp'] = ObjectId(poem['_id']).generation_time.strftime("%Y%m%dT%H%M%SZ")
-        return poem, 200
+    def get(self, promptID):
+        prompt = self.dbRef.find_one({'_id': ObjectId(promptID)})
+        prompt['timeStamp'] = ObjectId(prompt['_id']).generation_time.strftime("%Y%m%dT%H%M%SZ")
+        return prompt, 200
 
-    def put(self, poemID):
+    def put(self, promptID):
         c = ObjectId('5f4bc3dce34e386e9c90147c').generation_time
-        # used to update poem
+        # used to update prompt
         app.logger.info(c.date())
         app.logger.info(c.timetz())
         app.logger.info(c.time())
@@ -26,6 +26,6 @@ class PoemByID(Resource):
         app.logger.info(c.now(timezone.utc).tzinfo())
         return {'result': str(c)}, 200
 
-    def delete(self, poemID):
-        logger.debug("Inisde the delete method of PoemByID. PoemID = {}".format(poemId))
+    def delete(self, promptID):
+        logger.debug("Inisde the delete method of PromptByID. PromptID = {}".format(promptID))
         return {"message": "Inside delete method"}, 200
