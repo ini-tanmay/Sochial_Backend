@@ -16,7 +16,7 @@ class MusingCommentByID(Resource):
 
     def get(self, musingID):
         output = []
-        comments = self.commentRef.find({'_id': ObjectID(musingID)}).sort('_id', pymongo.DESCENDING)
+        comments = self.commentRef.find({'_id': ObjectId(musingID)}).sort('_id', pymongo.DESCENDING)
         app.logger.info(comments.count())
         for i in comments:
             output.append(i)
