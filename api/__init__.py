@@ -42,7 +42,7 @@ restServerInstance.add_resource(MusingCommentByID, "/api/v1.0/musings/id/comment
 restServerInstance.add_resource(PromptCommentByID, "/api/v1.0/prompts/id/comments/<string:promptID>",
                                 endpoint='prompt_comment_by_id')
 from api import *
-from app import *
+restServerInstance.init_app(app)
 
 # restServerInstance.add_resource(PoemStatsIncByID, "/api/v1.0/poems/stats/inc/id/<string:poemID>",
 #                                 endpoint='poem_stats_inc_by_id')
