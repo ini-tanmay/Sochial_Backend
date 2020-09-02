@@ -16,7 +16,7 @@ class PromptCommentByID(Resource):
 
     def get(self, promptID):
         output = []
-        comments = self.commentRef.find({'_id': ObjectID(promptID)}).sort('_id', pymongo.DESCENDING)
+        comments = self.commentRef.find({'_id': ObjectId(promptID)}).sort('_id', pymongo.DESCENDING)
         app.logger.info(comments.count())
         for i in comments:
             output.append(i)
