@@ -1,7 +1,6 @@
 from flask import Flask, jsonify,request
 from flask_pymongo import PyMongo
 import json
-from api import *
 import logging
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
@@ -29,6 +28,7 @@ app.json_encoder = JsonEncoder
 app.config.from_object(MyConfig)
 # MyConfig. (app)
 mongo = PyMongo(app)
+from api import *
 
 #
 # {
