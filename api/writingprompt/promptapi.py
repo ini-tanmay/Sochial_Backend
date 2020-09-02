@@ -8,11 +8,10 @@ class Prompt(Resource):
 
     def __init__(self):
         self.dbRef = mongo.db.prompts
-        self.commentRef = mongo.db.prompts.comments
 
     def post(self):
         promptDict = request.get_json(force=True)
-        doc_id = self.commentDbRef.insert_one(promptDict).inserted_id
+        doc_id = self.dbRef.insert_one(promptDict).inserted_id
         return {'id': doc_id}, 200
 
     def get(self):
