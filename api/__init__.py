@@ -1,5 +1,6 @@
 from flask_restful import Api
 from app import app
+from api import *
 from .userapi import User
 from api.poem.poemapi import Poem
 from api.poem.poembyidapi import PoemByID
