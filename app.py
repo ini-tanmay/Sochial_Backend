@@ -1,6 +1,7 @@
 from flask import Flask, jsonify,request
 from flask_pymongo import PyMongo
 import json
+from api import *
 import logging
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
@@ -59,6 +60,5 @@ def hello():
 
 
 if __name__ == '__main__':
-    from api import *
     app.run(threaded=True)
 
