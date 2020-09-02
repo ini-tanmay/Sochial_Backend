@@ -1,6 +1,5 @@
 from flask_restful import Api
 from app import app
-from api import *
 from .userapi import User
 from api.poem.poemapi import Poem
 from api.poem.poembyidapi import PoemByID
@@ -42,6 +41,8 @@ restServerInstance.add_resource(MusingCommentByID, "/api/v1.0/musings/id/comment
                                 endpoint='musing_comment_by_id')
 restServerInstance.add_resource(PromptCommentByID, "/api/v1.0/prompts/id/comments/<string:promptID>",
                                 endpoint='prompt_comment_by_id')
+from api import *
+from app import *
 
 # restServerInstance.add_resource(PoemStatsIncByID, "/api/v1.0/poems/stats/inc/id/<string:poemID>",
 #                                 endpoint='poem_stats_inc_by_id')
