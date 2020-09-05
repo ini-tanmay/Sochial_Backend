@@ -52,20 +52,27 @@ def get_following_list(userID):
     return jsonify(output)
 
 
-@app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',endpoint='follow_other_user', methods=['POST'])
+
+@app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',methods=['POST'])
 def myuser_follows_otheruser(otherUserID, name, username):
     followers = mongo.db.followers
+    users=mongo.db.users
     myUserDict = request.get_json(force=True)
     myUserDict['_id'] = ObjectId(myUserDict['_id'])
+    users.update_one({'_id': myUserDict['_id']},{'$inc': {'following': 1}})
+    users.update_one({'_id': ObjectId(otherUserID)},{'$inc': {'followers': 1}})
     followers.update_one({'_id': ObjectId(otherUserID)},
                          {'$push': {'followersList': myUserDict}, '$set': {'name': name, 'usern': username}},
                          upsert=True)
     return jsonify(True)
 
 
-@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>',endpoint='unfollow_other_user')
+@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>')
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
+    users=mongo.db.users
+    users.update_one({'_id': ObjectId(myUserID)},{'$inc': {'following': -1}})
+    users.update_one({'_id': ObjectId(otherUserID)},{'$inc': {'followers': -1}})
     followers.update(
         {"_id": ObjectId(otherUserID)},
         {
@@ -74,6 +81,8 @@ def myuser_unfollows_otheruser(myUserID, otherUserID):
             }
         })
     return jsonify(True)
+
+
 
 
 @app.route('/api/v1.0/users/username/<string:username>')
@@ -88,7 +97,7 @@ def is_user_taken(username):
 
 @app.route('/')
 def hello():
-    return 'Hey'
+    return 'Hey Chirag'
 
 
 if __name__ == '__main__':
