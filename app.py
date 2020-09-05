@@ -52,8 +52,7 @@ def get_following_list(userID):
     return jsonify(output)
 
 
-@app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',endpoint='follow_other_user')
-           methods=['POST'])
+@app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',endpoint='follow_other_user', methods=['POST'])
 def myuser_follows_otheruser(otherUserID, name, username):
     followers = mongo.db.followers
     myUserDict = request.get_json(force=True)
