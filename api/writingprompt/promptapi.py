@@ -26,6 +26,7 @@ class Prompt(Resource):
             lastDocumentID = lastDocument.get('_id')
             app.logger.info(lastDocumentID)
         if lastDocument is not None:
+            lastDocument['timeStamp'] = int(ObjectId(lastDocument['_id']).generation_time.timestamp() * 1000)
             output.append(lastDocument)
         prompts = self.dbRef.find({'_id': {'$gt': ObjectId((lastDocumentID))}}).sort('_id', pymongo.ASCENDING).limit(
             limit)
