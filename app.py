@@ -51,7 +51,7 @@ def get_followers_list(userID, last_no):
     users = followers.find({'_id': userID}, {'followersList': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
     for i in users:
         output.append(i['followersList'])
-    return jsonify(output)
+    return jsonify(output[0])
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/following')
