@@ -25,6 +25,7 @@ class Poem(Resource):
             lastDocumentID = lastDocument.get('_id')
             app.logger.info(lastDocumentID)
         if lastDocument is not None:
+            lastDocument['timeStamp'] = int(ObjectId(lastDocument['_id']).generation_time.timestamp() * 1000)
             output.append(lastDocument)
         else:
             return [], 200
