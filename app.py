@@ -1,9 +1,17 @@
-from flask import Flask, jsonify,request
+from flask import Flask, jsonify, request
 from flask_pymongo import PyMongo
 import json
 import logging
+from notificationservice import NotificationService
+from datetime import datetime
+from math import sqrt
+import pyrebase
+from collections import Counter
+
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
+
+
 class JsonEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
@@ -28,9 +36,15 @@ app.json_encoder = JsonEncoder
 app.config.from_object(MyConfig)
 # MyConfig. (app)
 mongo = PyMongo(app)
-from api import *
 
-@app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers_list')
+
+# from api import *
+# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
+# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
+# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/following/")
+# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/timeline")
+
+@app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='fiuu')
 def get_followers_list(userID, last_no):
     output = []
     followers = mongo.db.followers
@@ -40,7 +54,7 @@ def get_followers_list(userID, last_no):
     return jsonify(output[0])
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/following',endpoint='get_following_list')
+@app.route('/api/v1.0/users/id/<string:userID>/following')
 def get_following_list(userID):
     output = []
     followers = mongo.db.followers
@@ -52,27 +66,111 @@ def get_following_list(userID):
     return jsonify(output)
 
 
+@app.route('/api/v1.0/users/id/<string:userID>/follow/posts')
+def get_posts_from_who_i_follow(userID):
+    output = []
+    poemsList = []
+    musingsList = []
+    promptsList = []
+    followers = mongo.db.followers
+    poems = mongo.db.poems
+    musings = mongo.db.musings
+    prompts = mongo.db.prompts
+    users = followers.find({}, {
+        'followersList': {'$elemMatch': {'_id': ObjectId(userID)}}})
+    # ObjectId.fromDate(datetime.utcnow())
+    #  ISODate("2018-01-24T06:09:42Z")
 
-@app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',methods=['POST'])
+    for i in users:
+        poemsFound = poems.find({"$and": [{"userID": {'$e': str(i['_id'])}},
+                                          {"_id": {'$gte': ObjectId.fromDate(datetime.utcnow())}}]}).sort('_id',
+                                                                                                          pymongo.ASCENDING)
+        for p in poemsFound:
+            poemsList.append(p)
+        # musings
+        musingsFound = musings.find({"$and": [{"userID": {'$e': str(i['_id'])}},
+                                              {"_id": {'$gte': ObjectId.fromDate(datetime.utcnow())}}]}).sort('_id',
+                                                                                                              pymongo.ASCENDING)
+        for m in musingsFound:
+            musingsList.append(m)
+        # prompts
+        promptsFound = prompts.find({"$and": [{"userID": {'$e': str(i['_id'])}},
+                                              {"_id": {'$gte': ObjectId.fromDate(datetime.utcnow())}}]}).sort('_id',
+                                                                                                              pymongo.ASCENDING)
+        for pr in promptsFound:
+            promptsList.append(pr)
+
+        # poems.find({'userID': str(i['_id'])})
+        # output.append(i)
+    output.extend(poemsList)
+    output.extend(promptsList)
+    output.extend(musingsList)
+    return jsonify(output)
+
+
+@app.route('/api/v1.0/poems/best')
+def get_best_posts():
+    postIDs = []
+    poems = []
+    scores = []
+    poemsRef = mongo.db.poems
+    config = {
+        "apiKey": "AIzaSyCbxuL2byX9tLgXrS7muw5kwGE5zl9-eM0",
+        "authDomain": "sochial-ee116.firebaseapp.com",
+        "databaseURL": "https://sochial-ee116.firebaseio.com",
+        'storageBucket':''
+    }
+    firebase = pyrebase.initialize_app(config)
+    db = firebase.database()
+    today_since_epoch=datetime.utcnow().today()
+    app.logger.info(str(today_since_epoch))
+    result = db.child("posts").order_by_child('postedBy').start_at(110100).child('poems').order_by_child("likeCount").limit_to_first(100).get()
+    for key, val in result.val().items():
+        postIDs.append(key)
+        if val['viewCount'] is None:
+            val['viewCount'] = 1
+        scores.append(get_score(val['likeCount'], val['viewCount']))
+    all_posts = dict(zip(postIDs, scores))
+    all_posts = dict(sorted(all_posts.items(), key=lambda x: x[1], reverse=True))
+    for key, val in all_posts.items():
+        poem = poemsRef.find_one({'_id': ObjectId(key)})
+        poems.append(poem)
+    return jsonify(poems)
+
+
+def get_score(likes, views):
+    downs = views - likes
+    n = likes - 1 + downs
+
+    if n <= 0:
+        return 0
+
+    z = 1.44  # 1.44 = 85%, 1.96 = 95%
+    phat = float(likes) / n
+    return ((phat + z * z / (2 * n) - z * sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n))
+
+
+@app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
+           methods=['POST'])
 def myuser_follows_otheruser(otherUserID, name, username):
     followers = mongo.db.followers
-    users=mongo.db.users
+    users = mongo.db.users
     myUserDict = request.get_json(force=True)
-    myUserDict['_id'] = ObjectId(myUserDict['_id'])
-    users.update_one({'_id': myUserDict['_id']},{'$inc': {'following': 1}})
-    users.update_one({'_id': ObjectId(otherUserID)},{'$inc': {'followers': 1}})
+    users.update_one({'_id': myUserDict['_id']}, {'$inc': {'following': 1}})
+    users.update_one({'_id': ObjectId(otherUserID)}, {'$inc': {'followers': 1}})
     followers.update_one({'_id': ObjectId(otherUserID)},
                          {'$push': {'followersList': myUserDict}, '$set': {'name': name, 'usern': username}},
                          upsert=True)
+    NotificationService().send_message(myUserDict['otherFcm'], myUserDict['name'], myUserDict['usern'])
     return jsonify(True)
 
 
 @app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>')
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
-    users=mongo.db.users
-    users.update_one({'_id': ObjectId(myUserID)},{'$inc': {'following': -1}})
-    users.update_one({'_id': ObjectId(otherUserID)},{'$inc': {'followers': -1}})
+    users = mongo.db.users
+    users.update_one({'_id': ObjectId(myUserID)}, {'$inc': {'following': -1}})
+    users.update_one({'_id': ObjectId(otherUserID)}, {'$inc': {'followers': -1}})
     followers.update(
         {"_id": ObjectId(otherUserID)},
         {
@@ -81,8 +179,6 @@ def myuser_unfollows_otheruser(myUserID, otherUserID):
             }
         })
     return jsonify(True)
-
-
 
 
 @app.route('/api/v1.0/users/username/<string:username>')
@@ -97,7 +193,7 @@ def is_user_taken(username):
 
 @app.route('/')
 def hello():
-    return 'Hey Chirag'
+    return 'Hey'
 
 
 if __name__ == '__main__':
