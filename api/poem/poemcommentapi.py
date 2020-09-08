@@ -16,10 +16,11 @@ class PoemCommentByID(Resource):
 
     def get(self, poemID):
         output = []
-        comments = self.commentRef.find({'postID':poemID}).sort('_id', pymongo.DESCENDING)
+        comments = self.commentRef.find({'postID': poemID}).sort('_id', pymongo.DESCENDING)
         app.logger.info(comments.count())
         for i in comments:
             output.append(i)
+
         return output, 200
 
     def put(self, poemID):

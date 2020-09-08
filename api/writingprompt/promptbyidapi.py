@@ -12,7 +12,7 @@ class PromptByID(Resource):
 
     def get(self, promptID):
         prompt = self.dbRef.find_one({'_id': ObjectId(promptID)})
-        prompt['timeStamp'] = ObjectId(prompt['_id']).generation_time.strftime("%Y%m%dT%H%M%SZ")
+        prompt['timeStamp'] = ObjectId(prompt['_id']).generation_time.timestamp() * 1000
         return prompt, 200
 
     def put(self, promptID):

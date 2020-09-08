@@ -12,7 +12,7 @@ class MusingByID(Resource):
 
     def get(self, musingID):
         musing = self.dbRef.find_one({'_id': ObjectId(musingID)})
-        musing['timeStamp'] = ObjectId(musing['_id']).generation_time.strftime("%Y%m%dT%H%M%SZ")
+        musing['timeStamp'] = ObjectId(musing['_id']).generation_time.timestamp() * 1000
         return musing, 200
 
     def put(self, musingID):

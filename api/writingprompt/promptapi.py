@@ -8,10 +8,11 @@ class Prompt(Resource):
 
     def __init__(self):
         self.dbRef = mongo.db.prompts
+        self.commentRef = mongo.db.prompts.comments
 
     def post(self):
         promptDict = request.get_json(force=True)
-        doc_id = self.dbRef.insert_one(promptDict).inserted_id
+        doc_id = self.d.insert_one(promptDict).inserted_id
         return {'id': doc_id}, 200
 
     def get(self):
@@ -29,6 +30,6 @@ class Prompt(Resource):
         prompts = self.dbRef.find({'_id': {'$gt': ObjectId((lastDocumentID))}}).sort('_id', pymongo.ASCENDING).limit(
             limit)
         for i in prompts:
-            i['timeStamp'] = ObjectId(i['_id']).generation_time.strftime("%Y%m%dT%H%M%SZ")
+            i['timeStamp'] = ObjectId(i['_id']).generation_time.timestamp()*1000
             output.append(i)
         return output, 200

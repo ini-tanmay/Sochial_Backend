@@ -1,6 +1,6 @@
 from flask_restful import Api
 from app import app
-from .userapi import User
+from api.user.userapi import User
 from api.poem.poemapi import Poem
 from api.poem.poembyidapi import PoemByID
 from api.poem.poemsbyuserid import PoemsByUserID
@@ -15,7 +15,19 @@ from api.writingprompt.promptsbyuserid import PromptsByUserID
 from api.writingprompt.promptcommentapi import PromptCommentByID
 
 restServerInstance = Api(app)
+
+# GET     /users/{user_id}/followers           Get a list of followers of a user
+# GET     /users/{user_id}/followers_count     Get the number of followers of a user
+# GET     /users/{user_id}/following           Get the list of users this user is following
+# GET     /users/{user_id}/following_count     Get the number of users this user follows
+# GET     /users/{user_id}/posts               Get the messages sent by a user
+# GET     /users/{user_id}/timeline            Get the timeline for this user
+# PUT     /users/{user_id}                     Create a new user
+# PUT     /users/{user_id}/following/{target}  Follow a user
+# DELETE  /users/{user_id}/following/{target}  Unfollow a user
 restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>")
+# restServerInstance.add_resource(UserRelationship, "/api/v1.0/users/relation/id/<string:userID>/<string:otherUserID>")
+
 
 # add posts and get posts via pagination
 restServerInstance.add_resource(Poem, "/api/v1.0/poems", endpoint='all_poems')
@@ -42,6 +54,7 @@ restServerInstance.add_resource(MusingCommentByID, "/api/v1.0/musings/id/comment
 restServerInstance.add_resource(PromptCommentByID, "/api/v1.0/prompts/id/comments/<string:promptID>",
                                 endpoint='prompt_comment_by_id')
 from api import *
+
 restServerInstance.init_app(app)
 
 # restServerInstance.add_resource(PoemStatsIncByID, "/api/v1.0/poems/stats/inc/id/<string:poemID>",
