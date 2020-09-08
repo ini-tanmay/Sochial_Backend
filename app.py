@@ -51,8 +51,39 @@ def get_followers_list(userID, last_no):
     users = followers.find({'_id': userID}, {'followersList': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
     for i in users:
         output.append(i['followersList'])
-    return jsonify(output[0])
+    return jsonify(output)
 
+@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/inc/<string:type>')
+def incrementLikes(userID,postID,type):
+    poems=mongo.db.poems
+    musings=mongo.db.musings
+    prompts=mongo.db.prompts
+    if type=='poems':
+        poems.update({'_id':ObjectId(postID)},{'$inc':{'likes':1},'$push':{'likedBy':userID}})
+    elif type=='musings':
+        musings.update({'_id':ObjectId(postID)},{'$inc':{'likes':1},'$push':{'likedBy':userID}})
+    else:
+        prompts.update({'_id':ObjectId(postID)},{'$inc':{'likes':1},'$push':{'likedBy':userID}})
+    return jsonify([]);
+@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/inc')
+def incrementViews(userID,postID):
+    poems=mongo.db.poems
+    if type=='poems':
+        poems.update({'_id':ObjectId(postID)},{'$inc':{'views':1},'$push':{'viewedBy':userID}})
+    return jsonify([]);
+
+@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/dec/<string:type>')
+def decrementLikes(userID,postID,type):
+    poems=mongo.db.poems
+    musings=mongo.db.musings
+    prompts=mongo.db.prompts
+    if type=='poems':
+        poems.update({'_id':ObjectId(postID)},{'$inc':{'likes':-1},'$pull':{'likedBy':userID}})
+    elif type=='musings':
+        musings.update({'_id':ObjectId(postID)},{'$inc':{'likes':-1},'$pull':{'likedBy':userID}})
+    else:
+        prompts.update({'_id':ObjectId(postID)},{'$inc':{'likes':-1},'$pull':{'likedBy':userID}})
+    return jsonify([]);
 
 @app.route('/api/v1.0/users/id/<string:userID>/following')
 def get_following_list(userID):
@@ -64,7 +95,15 @@ def get_following_list(userID):
     for i in users:
         output.append(i)
     return jsonify(output)
-
+# 
+# @app.route('/api/v1.0/poems/id/update')
+# def update():
+#     poems=mongo.db.poems
+#     musings=mongo.db.musings
+#     prompts=mongo.db.prompts
+#     poems.update({},{'$set':{'likes':1,'comments':0,'views':1,'likedBy':['Duregm8wDUUoIyG7DQzLKw136hf2'],'viewedBy':['Duregm8wDUUoIyG7DQzLKw136hf2']}},multi=True)
+#     prompts.update({},{'$set':{'likes':1,'comments':0,'views':1,'likedBy':['Duregm8wDUUoIyG7DQzLKw136hf2']}},multi=True)
+#     musings.update({},{'$set':{'likes':1,'comments':0,'views':1,'likedBy':['Duregm8wDUUoIyG7DQzLKw136hf2']}},multi=True)
 
 @app.route('/api/v1.0/users/id/<string:userID>/follow/posts')
 def get_posts_from_who_i_follow(userID):
@@ -99,9 +138,6 @@ def get_posts_from_who_i_follow(userID):
                                                                                                               pymongo.ASCENDING)
         for pr in promptsFound:
             promptsList.append(pr)
-
-        # poems.find({'userID': str(i['_id'])})
-        # output.append(i)
     output.extend(poemsList)
     output.extend(promptsList)
     output.extend(musingsList)
@@ -118,13 +154,14 @@ def get_best_posts():
         "apiKey": "AIzaSyCbxuL2byX9tLgXrS7muw5kwGE5zl9-eM0",
         "authDomain": "sochial-ee116.firebaseapp.com",
         "databaseURL": "https://sochial-ee116.firebaseio.com",
-        'storageBucket':''
+        'storageBucket': ''
     }
     firebase = pyrebase.initialize_app(config)
     db = firebase.database()
-    today_since_epoch=datetime.utcnow().today()
+    today_since_epoch = datetime.utcnow().today()
     app.logger.info(str(today_since_epoch))
-    result = db.child("posts").order_by_child('postedBy').start_at(110100).child('poems').order_by_child("likeCount").limit_to_first(100).get()
+    result = db.child("posts").order_by_child('postedBy').start_at(110100).child('poems').order_by_child(
+        "likeCount").limit_to_first(100).get()
     for key, val in result.val().items():
         postIDs.append(key)
         if val['viewCount'] is None:
@@ -148,6 +185,7 @@ def get_score(likes, views):
     z = 1.44  # 1.44 = 85%, 1.96 = 95%
     phat = float(likes) / n
     return ((phat + z * z / (2 * n) - z * sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n))
+
 
 @app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
            methods=['POST'])
@@ -180,8 +218,6 @@ def myuser_unfollows_otheruser(myUserID, otherUserID):
     return jsonify(True)
 
 
-
-
 @app.route('/api/v1.0/users/username/<string:username>')
 def is_user_taken(username):
     users = mongo.db.users
@@ -195,6 +231,8 @@ def is_user_taken(username):
 @app.route('/')
 def hello():
     return 'Hey'
+
+
 
 
 if __name__ == '__main__':
