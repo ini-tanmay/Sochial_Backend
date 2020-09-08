@@ -149,7 +149,6 @@ def get_score(likes, views):
     phat = float(likes) / n
     return ((phat + z * z / (2 * n) - z * sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n))
 
-
 @app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
            methods=['POST'])
 def myuser_follows_otheruser(otherUserID, name, username):
@@ -157,8 +156,8 @@ def myuser_follows_otheruser(otherUserID, name, username):
     users = mongo.db.users
     myUserDict = request.get_json(force=True)
     users.update_one({'_id': myUserDict['_id']}, {'$inc': {'following': 1}})
-    users.update_one({'_id': ObjectId(otherUserID)}, {'$inc': {'followers': 1}})
-    followers.update_one({'_id': ObjectId(otherUserID)},
+    users.update_one({'_id': (otherUserID)}, {'$inc': {'followers': 1}})
+    followers.update_one({'_id': (otherUserID)},
                          {'$push': {'followersList': myUserDict}, '$set': {'name': name, 'usern': username}},
                          upsert=True)
     NotificationService().send_message(myUserDict['otherFcm'], myUserDict['name'], myUserDict['usern'])
@@ -169,16 +168,18 @@ def myuser_follows_otheruser(otherUserID, name, username):
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
     users = mongo.db.users
-    users.update_one({'_id': ObjectId(myUserID)}, {'$inc': {'following': -1}})
-    users.update_one({'_id': ObjectId(otherUserID)}, {'$inc': {'followers': -1}})
+    users.update_one({'_id': (myUserID)}, {'$inc': {'following': -1}})
+    users.update_one({'_id': (otherUserID)}, {'$inc': {'followers': -1}})
     followers.update(
-        {"_id": ObjectId(otherUserID)},
+        {"_id": (otherUserID)},
         {
             "$pull": {
-                "followersList": {"_id": ObjectId(myUserID)}
+                "followersList": {"_id": (myUserID)}
             }
         })
     return jsonify(True)
+
+
 
 
 @app.route('/api/v1.0/users/username/<string:username>')
