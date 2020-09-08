@@ -7,6 +7,7 @@ from datetime import datetime
 from math import sqrt
 import pyrebase
 from collections import Counter
+from api import *
 
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
