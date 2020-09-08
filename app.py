@@ -48,7 +48,7 @@ from api import *
 def get_followers_list(userID, last_no):
     output = []
     followers = mongo.db.followers
-    users = followers.find({'_id': ObjectId(userID)}, {'followersList': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
+    users = followers.find({'_id': userID}, {'followersList': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
     for i in users:
         output.append(i['followersList'])
     return jsonify(output[0])
@@ -59,7 +59,7 @@ def get_following_list(userID):
     output = []
     followers = mongo.db.followers
     users = followers.find({}, {
-        'followersList': {'$elemMatch': {'_id': ObjectId(userID)}}
+        'followersList': {'$elemMatch': {'_id': userID}}
         , '_id': 1, 'name': 1, 'usern': 1})
     for i in users:
         output.append(i)
