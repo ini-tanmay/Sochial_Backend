@@ -7,7 +7,6 @@ from datetime import datetime
 from math import sqrt
 import pyrebase
 from collections import Counter
-from api import *
 
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
@@ -39,7 +38,7 @@ app.config.from_object(MyConfig)
 mongo = PyMongo(app)
 
 
-# from api import *
+from api import *
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/following/")
