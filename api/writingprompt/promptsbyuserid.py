@@ -14,6 +14,6 @@ class PromptsByUserID(Resource):
         output = []
         prompts = self.dbRef.find({'userID': userID})
         for i in prompts:
-            i['timeStamp'] = ObjectId(i['_id']).generation_time.strftime("%Y%m%dT%H%M%SZ")
+            i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
             output.append(i)
         return output, 200

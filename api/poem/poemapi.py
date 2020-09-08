@@ -31,7 +31,7 @@ class Poem(Resource):
         poems = self.dbRef.find({'_id': {'$gt': ObjectId((lastDocumentID))}}).sort('_id', pymongo.ASCENDING).limit(
             limit)
         for i in poems:
-            i['timeStamp'] = ObjectId(i['_id']).generation_time.timestamp()*1000
+            i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
             output.append(i)
         return output, 200
 

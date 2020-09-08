@@ -12,7 +12,7 @@ class PoemByID(Resource):
 
     def get(self, poemID):
         poem = self.dbRef.find_one({'_id': ObjectId(poemID)})
-        poem['timeStamp'] = ObjectId(poem['_id']).generation_time.timestamp() * 1000
+        poem['timeStamp'] = int(ObjectId(poem['_id']).generation_time.timestamp() * 1000)
         return poem, 200
 
     def put(self, poemID):
