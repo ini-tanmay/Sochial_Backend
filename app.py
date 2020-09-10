@@ -38,7 +38,7 @@ app.config.from_object(MyConfig)
 mongo = PyMongo(app)
 
 
-# from api import *
+from api import *
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/following/")
@@ -243,6 +243,4 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    from api import *
-
-    app.run(host='192.168.1.69', port=5065, debug=False, use_reloader=True)
+    app.run(threaded=True)
