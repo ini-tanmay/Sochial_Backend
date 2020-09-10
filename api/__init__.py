@@ -13,6 +13,7 @@ from api.writingprompt.promptapi import Prompt
 from api.writingprompt.promptbyidapi import PromptByID
 from api.writingprompt.promptsbyuserid import PromptsByUserID
 from api.writingprompt.promptcommentapi import PromptCommentByID
+from api.bookmark.bookmarkapi import Bookmark
 
 restServerInstance = Api(app)
 
@@ -26,6 +27,7 @@ restServerInstance = Api(app)
 # PUT     /users/{user_id}/following/{target}  Follow a user
 # DELETE  /users/{user_id}/following/{target}  Unfollow a user
 restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>")
+restServerInstance.add_resource(Bookmark, "/api/v1.0/users/id/<string:userID>/bookmarks")
 # restServerInstance.add_resource(UserRelationship, "/api/v1.0/users/relation/id/<string:userID>/<string:otherUserID>")
 
 

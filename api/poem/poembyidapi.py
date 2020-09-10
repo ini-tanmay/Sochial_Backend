@@ -10,6 +10,8 @@ class PoemByID(Resource):
     def __init__(self):
         self.dbRef = mongo.db.poems
 
+
+
     def get(self, poemID):
         poem = self.dbRef.find_one({'_id': ObjectId(poemID)})
         poem['timeStamp'] = int(ObjectId(poem['_id']).generation_time.timestamp() * 1000)
@@ -26,6 +28,9 @@ class PoemByID(Resource):
         app.logger.info(c.now(timezone.utc).tzinfo())
         return {'result': str(c)}, 200
 
+
+
     def delete(self, poemID):
         logger.debug("Inisde the delete method of PoemByID. PoemID = {}".format(poemId))
         return {"message": "Inside delete method"}, 200
+

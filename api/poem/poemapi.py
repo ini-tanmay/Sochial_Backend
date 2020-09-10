@@ -21,6 +21,7 @@ class Poem(Resource):
             lastDocumentID=request.args['last_id']
         except Exception as e:
             lastDocument = self.dbRef.find_one(sort=[('_id', pymongo.ASCENDING)])
+
         if lastDocument is not None:
             lastDocumentID = lastDocument.get('_id')
             app.logger.info(lastDocumentID)
