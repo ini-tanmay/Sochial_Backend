@@ -101,7 +101,7 @@ def get_following_list(userID):
         output.append(i)
     return jsonify(output)
 
-@app.route('/loaderio-a71ee73fa9599a683d31ccc6a27a3c5e')
+@app.route('/loaderio-a71ee73fa9599a683d31ccc6a27a3c5e.txt')
 def loading():
     return current_app.send_static_file('loader_file.txt')
 
