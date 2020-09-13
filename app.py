@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, current_app
 from flask_pymongo import PyMongo
 import json
 import logging
@@ -101,8 +101,10 @@ def get_following_list(userID):
         output.append(i)
     return jsonify(output)
 
+@app.route('loaderio-5766de92b38d3cc2e912db60eeb642db.txt')
+def loading():
+    return current_app.send_static_file('loader_file.txt')
 
-#
 # @app.route('/api/v1.0/poems/id/update')
 # def update():
 #     poems=mongo.db.poems
