@@ -7,6 +7,7 @@ from datetime import datetime
 from math import sqrt
 from collections import Counter
 import pymongo
+from scout_apm.flask import ScoutApm
 
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
@@ -36,6 +37,8 @@ app.json_encoder = JsonEncoder
 app.config.from_object(MyConfig)
 # MyConfig. (app)
 mongo = PyMongo(app)
+ScoutApm(app)
+app.config["SCOUT_NAME"] = "Sochial"
 
 
 from api import *
