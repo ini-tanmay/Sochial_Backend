@@ -14,6 +14,12 @@ from api.writingprompt.promptbyidapi import PromptByID
 from api.writingprompt.promptsbyuserid import PromptsByUserID
 from api.writingprompt.promptcommentapi import PromptCommentByID
 from api.bookmark.bookmarkapi import Bookmark
+from api.blog.blogapi import Blog
+from api.blog.blogbyidapi import BlogByID
+from  api.blog.blogsbyuserid import BlogsByUserID
+from api.blog.blogcommentapi import BlogCommentByID
+from api.bookmark.bookmarkapi import Bookmark
+
 
 restServerInstance = Api(app)
 
