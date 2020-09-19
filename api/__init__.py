@@ -35,11 +35,13 @@ restServerInstance.add_resource(Bookmark, "/api/v1.0/users/id/<string:userID>/bo
 restServerInstance.add_resource(Poem, "/api/v1.0/poems", endpoint='all_poems')
 restServerInstance.add_resource(Musing, "/api/v1.0/musings", endpoint='all_musings')
 restServerInstance.add_resource(Prompt, "/api/v1.0/prompts", endpoint='all_prompts')
+restServerInstance.add_resource(Blog, "/api/v1.0/blogs", endpoint='all_blogs')
 
 # get, edit, update, delete post by it's id
 restServerInstance.add_resource(PoemByID, "/api/v1.0/poems/id/<string:poemID>", endpoint='poem_by_id')
 restServerInstance.add_resource(MusingByID, "/api/v1.0/musings/id/<string:musingID>", endpoint='musing_by_id')
 restServerInstance.add_resource(PromptByID, "/api/v1.0/prompts/id/<string:promptID>", endpoint='prompt_by_id')
+restServerInstance.add_resource(BlogByID, "/api/v1.0/blogs/id/<string:blogID>", endpoint='blog_by_id')
 
 # get list of all posts made by particular user
 restServerInstance.add_resource(PoemsByUserID, "/api/v1.0/poems/user/id/<string:userID>", endpoint='poems_by_user_id')
@@ -47,6 +49,8 @@ restServerInstance.add_resource(MusingsByUserID, "/api/v1.0/musings/user/id/<str
                                 endpoint='musings_by_user_id')
 restServerInstance.add_resource(PromptsByUserID, "/api/v1.0/prompts/user/id/<string:userID>",
                                 endpoint='prompts_by_user_id')
+restServerInstance.add_resource(BlogsByUserID, "/api/v1.0/blogs/user/id/<string:userID>",
+                                endpoint='blogs_by_user_id')
 
 # get, edit, update, delete comment to a particular post by it's id
 restServerInstance.add_resource(PoemCommentByID, "/api/v1.0/poems/id/comments/<string:poemID>",
@@ -55,6 +59,11 @@ restServerInstance.add_resource(MusingCommentByID, "/api/v1.0/musings/id/comment
                                 endpoint='musing_comment_by_id')
 restServerInstance.add_resource(PromptCommentByID, "/api/v1.0/prompts/id/comments/<string:promptID>",
                                 endpoint='prompt_comment_by_id')
+restServerInstance.add_resource(BlogCommentByID, "/api/v1.0/blogs/id/comments/<string:blogID>",
+                                endpoint='blog_comment_by_id')
+
+
+
 from api import *
 
 restServerInstance.init_app(app)
