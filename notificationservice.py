@@ -18,11 +18,15 @@ class NotificationService:
         result = self.push_service.notify_single_device(registration_id=fcmToken, message_title=message_title,
                                                         message_body=message_body)
 
-    def send_featured_message(self, fcmToken,title,content=''):
+    def send_featured_message(self, fcmToken, title, content=''):
         message_title = 'Yippee, your post got featured!'
         if title is not None:
-            message_body = 'Your poem titled '+title+' is in the daily top 150, check it out now!'
+            message_body = 'Your poem titled ' + title + ' is in the daily top 150, check it out now!'
         else:
-            message_body ='Your post '+content[:40]+'... is in the daily top 150, check it out now!'
+            message_body = 'Your post ' + content[:40] + '... is in the daily top 150, check it out now!'
+        result = self.push_service.notify_single_device(registration_id=fcmToken, message_title=message_title,
+                                                        message_body=message_body)
+
+    def send_featured_blog_message(self, fcmToken, title, thumbnail):
         result = self.push_service.notify_single_device(registration_id=fcmToken, message_title=message_title,
                                                         message_body=message_body)

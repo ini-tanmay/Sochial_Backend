@@ -8,11 +8,11 @@ class PoemCommentByID(Resource):
 
     def __init__(self):
         self.commentRef = mongo.db.poems.comments
-        self.poemsRef=mongo.db.poems
+        self.poemsRef = mongo.db.poems
 
     def post(self, poemID):
         commentDict = request.get_json(force=True)
-        self.poemsRef.update({'_id':ObjectId(poemID)},{'$inc':{'comments':1}})
+        self.poemsRef.update({'_id': ObjectId(poemID)}, {'$inc': {'comments': 1}})
         doc_id = self.commentRef.insert_one(commentDict).inserted_id
         return {'id': doc_id}, 200
 

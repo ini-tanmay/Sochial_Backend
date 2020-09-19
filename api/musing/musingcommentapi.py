@@ -8,11 +8,11 @@ class MusingCommentByID(Resource):
 
     def __init__(self):
         self.commentRef = mongo.db.musings.comments
-        self.musingsRef=mongo.db.musings
+        self.musingsRef = mongo.db.musings
 
     def post(self, musingID):
         commentDict = request.get_json(force=True)
-        self.musingsRef.update({'_id':ObjectId(musingID)},{'$inc':{'comments':1}})
+        self.musingsRef.update({'_id': ObjectId(musingID)}, {'$inc': {'comments': 1}})
         doc_id = self.commentRef.insert_one(commentDict).inserted_id
         return {'id': doc_id}, 200
 

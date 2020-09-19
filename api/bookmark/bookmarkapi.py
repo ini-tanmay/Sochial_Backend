@@ -23,8 +23,8 @@ class Bookmark(Resource):
         return {'id': 'true'}, 200
 
     def get(self, userID):
-        last_no=0
-        output=[]
+        last_no = 0
+        output = []
         posts = self.dbRef.find({'_id': userID}, {'bookmarkedPosts': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
         for i in posts:
             app.logger.info(i)

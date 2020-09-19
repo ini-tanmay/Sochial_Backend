@@ -17,14 +17,14 @@ class User(Resource):
 
     def get(self, userID):
         user = self.dbRef.find_one({'_id': userID})
+        if user is None:
+            return user, 201
         return user, 200
 
     def put(self, userID):
         req_data = request.get_json(force=True)
-        self.dbRef.update({'_id': userID}, {'$set': {'bio': req_data['bio'], 'site': req_data['site']},
-                                            })
-        logger.debug("Inisde the put method of Task")
-        return {"message": "Inside put method"}, 200
+        self.dbRef.update({'_id': userID}, {'$set': req_data})
+        return {"message": userID}, 200
 
     def delete(self, userID):
         logger.debug("Inisde the delete method of Task")
