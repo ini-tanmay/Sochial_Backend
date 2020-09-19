@@ -168,7 +168,8 @@ def get_posts_from_who_i_follow(userID):
     return jsonify(output)
 
 
-@app.route('/api/v1.0/posts/best')
+
+@app.route('/api/v1.0/posts/best', endpoint='get_best_posts')
 def get_best_posts():
     poemsRef = mongo.db.poems
     musingsRef = mongo.db.musings
@@ -201,8 +202,8 @@ def get_best_posts():
     return jsonify(posts[:150])
 
 
-@app.route('/api/v1.0/posts/blogs/best')
-def get_best_posts():
+@app.route('/api/v1.0/posts/blogs/best' , endpoint='get_best_blogs')
+def get_best_blogs():    
     blogsRef = mongo.db.poems
     usersRef = mongo.db.users
     year = datetime.utcnow().date().year
