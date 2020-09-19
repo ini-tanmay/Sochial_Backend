@@ -41,7 +41,7 @@ ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
 
-from api import *
+# from api import *
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/following/")
@@ -55,6 +55,16 @@ def get_followers_list(userID, last_no):
     for i in users:
         output.append(i['followersList'])
     return jsonify(output)
+
+
+@app.route('/api/v1.0/users/id/<string:myUserID>/follows/<string:otherUserID>/check', endpoint='check_if_i_f_o')
+def does_user_follow_otherUser(myUserID, otherUserID):
+    followers = mongo.db.followers
+    user = followers.find({'_id': otherUserID}, {'followersList': {'$elemMatch': {'_id': myUserID}}})
+    for i in user:
+        if 'followersList' in i:
+            return jsonify(True)
+    return jsonify(False)
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/inc/<string:type>')
@@ -104,9 +114,11 @@ def get_following_list(userID):
         output.append(i)
     return jsonify(output)
 
-@app.route('/loaderio-a71ee73fa9599a683d31ccc6a27a3c5e.txt')
-def loading():
+
+@app.route('/loaderio-5766de92b38d3cc2e912db60eeb642db.txt')
+def testing_func():
     return current_app.send_static_file('loader_file.txt')
+
 
 # @app.route('/api/v1.0/poems/id/update')
 # def update():
@@ -161,10 +173,10 @@ def get_best_posts():
     poemsRef = mongo.db.poems
     musingsRef = mongo.db.musings
     promptsRef = mongo.db.prompts
-    usersRef=mongo.db.users
+    usersRef = mongo.db.users
     year = datetime.utcnow().date().year
     month = datetime.utcnow().date().month
-    day = datetime.utcnow().date().day-8
+    day = datetime.utcnow().date().day - 1
     date_time_str = str(year) + '-' + str(month) + '-' + str(day)
     d = datetime.strptime(date_time_str, '%Y-%m-%d')
     app.logger.info(d)
@@ -180,12 +192,35 @@ def get_best_posts():
         i['score'] = get_score(i['likes'], i['views'])
     posts = sorted(result, key=lambda i: i['score'])
     for i in posts[:150]:
-        user=usersRef.find_one({'_id':i['userID']},{'fcm':1})
+        user = usersRef.find_one({'_id': i['userID']}, {'fcm': 1})
         try:
-            title=i[title]
+            title = i[title]
         except:
-            title=None
-        NotificationService().send_featured_message(user['fcm'],title,i['text'])
+            title = None
+        NotificationService().send_featured_message(user['fcm'], title, i['text'])
+    return jsonify(posts[:150])
+
+
+@app.route('/api/v1.0/posts/blogs/best')
+def get_best_posts():
+    blogsRef = mongo.db.poems
+    usersRef = mongo.db.users
+    year = datetime.utcnow().date().year
+    month = datetime.utcnow().date().month
+    day = datetime.utcnow().date().day - 1
+    date_time_str = str(year) + '-' + str(month) + '-' + str(day)
+    dt = datetime.strptime(date_time_str, '%Y-%m-%d')
+    result = list(blogsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING))
+    for i in result:
+        i['score'] = get_score(i['likes'], i['dislikes'])
+    posts = sorted(result, key=lambda i: i['score'])
+    for i in posts[:150]:
+        user = usersRef.find_one({'_id': i['userID']}, {'fcm': 1})
+        try:
+            title = i[title]
+        except:
+            title = None
+        NotificationService().send_featured_message(user['fcm'], title, i['text'])
     return jsonify(posts[:150])
 
 
@@ -232,7 +267,7 @@ def myuser_unfollows_otheruser(myUserID, otherUserID):
 
 
 @app.route('/api/v1.0/users/username/<string:username>')
-def is_user_taken(username):
+def is_username_taken(username):
     users = mongo.db.users
     user = users.find_one({'usern': username})
     if user is None:
@@ -248,4 +283,6 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    app.run(threaded=True)
+    from api import *
+
+    app.run(host='192.168.1.69', port=5065, debug=False, use_reloader=True)
