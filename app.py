@@ -8,7 +8,6 @@ from math import sqrt
 from collections import Counter
 import pymongo
 from scout_apm.flask import ScoutApm
-
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
 
@@ -41,7 +40,7 @@ ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
 
-from api import *
+# from api import *
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/following/")
@@ -67,25 +66,48 @@ def does_user_follow_otherUser(myUserID, otherUserID):
     return jsonify(False)
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/inc/<string:type>')
+@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/inc/<string:type>')
 def incrementLikes(userID, postID, type):
     poems = mongo.db.poems
     musings = mongo.db.musings
     prompts = mongo.db.prompts
-    if type == 'poems':
+    blogs = mongo.db.blogs
+    if type == 'poem':
         poems.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
-    elif type == 'musings':
+    elif type == 'musing':
         musings.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
-    else:
+    elif type=='prompt':
         prompts.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
+    else:
+        blogs.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
+    return jsonify([]);
+
+@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/a/inc/<string:type>')
+def incrementAwards(userID, postID, type):
+    poems = mongo.db.poems
+    musings = mongo.db.musings
+    prompts = mongo.db.prompts
+    blogs = mongo.db.blogs
+    if type == 'poems':
+        poems.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
+    elif type == 'musings':
+        musings.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
+    elif type=='prompts':
+        prompts.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
+    else:
+        blogs.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
+
     return jsonify([]);
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/inc')
 def incrementViews(userID, postID):
-    poems = mongo.db.poems
+    blogs = mongo.db.poems
     if type == 'poem':
         poems.update({'_id': ObjectId(postID)}, {'$inc': {'views': 1}, '$push': {'viewedBy': userID}})
+    else:
+        poems.update({'_id': ObjectId(postID)}, {'$inc': {'views': 1}, '$push': {'viewedBy': userID}})
+
     return jsonify([]);
 
 
@@ -168,7 +190,6 @@ def get_posts_from_who_i_follow(userID):
     return jsonify(output)
 
 
-
 @app.route('/api/v1.0/posts/best', endpoint='get_best_posts')
 def get_best_posts():
     poemsRef = mongo.db.poems
@@ -203,7 +224,7 @@ def get_best_posts():
 
 
 @app.route('/api/v1.0/posts/blogs/best' , endpoint='get_best_blogs')
-def get_best_blogs():    
+def get_best_blogs():
     blogsRef = mongo.db.poems
     usersRef = mongo.db.users
     year = datetime.utcnow().date().year
@@ -284,4 +305,6 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    app.run(threaded=True)
+    from api import *
+
+    app.run(host='192.168.1.69', port=5065, debug=False, use_reloader=True)
