@@ -212,6 +212,4 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    from api import *
-
-    app.run(host='192.168.1.69', port=5065, debug=False, use_reloader=True)
+    app.run(threaded=True)
