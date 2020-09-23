@@ -10,7 +10,6 @@ import pymongo
 from scout_apm.flask import ScoutApm
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
-from api.shared import *
 
 
 class JsonEncoder(json.JSONEncoder):
