@@ -7,7 +7,6 @@
 get followers by userid /api/v1.0/users/id/<string:userID>/followers/<int:last_no>
 check if one userid follows otheruserid /api/v1.0/users/id/<string:myUserID>/follows/<string:otherUserID>/check
 get following by userid /api/v1.0/users/id/<string:userID>/following
-
 get a post by it's id /api/v1.0/<string:type>/id/<string:postID>
 get list of posts with pagination /api/v1.0/<string:type>/id/<string:postID>?limit=11&last_id=5qwfessntunt89wfuyfp
 get list of all posts uploaded by a single user /api/v1.0/<string:type>s/user/id/<string:userID>
