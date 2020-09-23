@@ -28,6 +28,8 @@ increment likes /api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/in
 decrement likes /api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/dec/<string:type>
 increment awards /api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/a/inc/<string:type>
 increment plays  /api/v1.0/blog/user/id/<string:userID>
+update post /api/v1.0/<string:type>/id/<string:postID>
+update user /api/v1.0/users/id/<string:userID>
 
 ### DELETE
 delete post by postid /api/v1.0/<string:type>/id/<string:postID>
