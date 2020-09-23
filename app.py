@@ -10,6 +10,7 @@ import pymongo
 from scout_apm.flask import ScoutApm
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
+from api.shared import *
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -178,7 +179,7 @@ def myuser_follows_otheruser(otherUserID, name, username):
     return jsonify(True)
 
 
-@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>', method=['PUT'])
+@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>', methods=['PUT'])
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
     users = mongo.db.users
