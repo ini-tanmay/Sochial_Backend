@@ -40,7 +40,7 @@ ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
 
-from api import *
+# from api import *
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
 # restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/following/")
@@ -200,9 +200,7 @@ def get_best_posts():
     month = datetime.utcnow().date().month
     day = datetime.utcnow().date().day - 1
     date_time_str = str(year) + '-' + str(month) + '-' + str(day)
-    d = datetime.strptime(date_time_str, '%Y-%m-%d')
-    app.logger.info(d)
-    dt = d
+    dt = datetime.strptime(date_time_str, '%Y-%m-%d')
     result = list(poemsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING))
     result.extend(
         list(musingsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING)))
@@ -225,14 +223,15 @@ def get_best_posts():
 
 @app.route('/api/v1.0/posts/blogs/best' , endpoint='get_best_blogs')
 def get_best_blogs():
-    blogsRef = mongo.db.poems
+    blogsRef = mongo.db.blogs
     usersRef = mongo.db.users
     year = datetime.utcnow().date().year
     month = datetime.utcnow().date().month
     day = datetime.utcnow().date().day - 1
     date_time_str = str(year) + '-' + str(month) + '-' + str(day)
     dt = datetime.strptime(date_time_str, '%Y-%m-%d')
-    result = list(blogsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING))
+    result = list(blogsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING).limit(150))
+    app.logger.info(list(result))
     for i in result:
         i['score'] = get_score(i['likes'], i['dislikes'])
     posts = sorted(result, key=lambda i: i['score'])
@@ -242,7 +241,7 @@ def get_best_blogs():
             title = i[title]
         except:
             title = None
-        NotificationService().send_featured_message(user['fcm'], title, i['text'])
+        NotificationService().send_featured_message(user['fcm'], title)
     return jsonify(posts[:150])
 
 
@@ -305,4 +304,6 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    app.run(threaded-True)
+    from api import *
+
+    app.run(host='192.168.1.31', port=5065, debug=False, use_reloader=True)
