@@ -34,7 +34,7 @@ ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
 
-# from api import *
+from api import *
 
 @app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
 def get_followers_list(userID, last_no):
