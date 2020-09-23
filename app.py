@@ -10,6 +10,7 @@ import pymongo
 from scout_apm.flask import ScoutApm
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
+from api.shared import *
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -22,31 +23,20 @@ class JsonEncoder(json.JSONEncoder):
 class MyConfig(object):
     RESTFUL_JSON = {'cls': JsonEncoder}
 
-
-# get poems with pagination
-# add poem
-# get poems by userID
-# get poem by poemID
-
 app = Flask(__name__)
 DB_URI = "mongodb+srv://sochial:voltairemensutrabhai@cluster0.7lovb.mongodb.net/gigat?retryWrites=true&w=majority"
 app.config['MONGO_DBNAME'] = 'gigat'
 app.config['MONGO_URI'] = DB_URI
 app.json_encoder = JsonEncoder
 app.config.from_object(MyConfig)
-# MyConfig. (app)
 mongo = PyMongo(app)
 ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
 
-from api import *
-# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
-# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/followers")
-# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/following/")
-# restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>/timeline")
+# from api import *
 
-@app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='fiuu')
+@app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
 def get_followers_list(userID, last_no):
     output = []
     followers = mongo.db.followers
@@ -66,62 +56,15 @@ def does_user_follow_otherUser(myUserID, otherUserID):
     return jsonify(False)
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/inc/<string:type>')
+@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/inc/<string:type>', methods=['PUT'])
 def incrementLikes(userID, postID, type):
-    poems = mongo.db.poems
-    musings = mongo.db.musings
-    prompts = mongo.db.prompts
-    blogs = mongo.db.blogs
-    if type == 'poem':
-        poems.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
-    elif type == 'musing':
-        musings.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
-    elif type=='prompt':
-        prompts.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
-    else:
-        blogs.update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
-    return jsonify([]);
-
-@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/a/inc/<string:type>')
-def incrementAwards(userID, postID, type):
-    poems = mongo.db.poems
-    musings = mongo.db.musings
-    prompts = mongo.db.prompts
-    blogs = mongo.db.blogs
-    if type == 'poems':
-        poems.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
-    elif type == 'musings':
-        musings.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
-    elif type=='prompts':
-        prompts.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
-    else:
-        blogs.update({'_id': ObjectId(postID)}, {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
-
+    get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
     return jsonify([]);
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/inc')
-def incrementViews(userID, postID):
-    blogs = mongo.db.poems
-    if type == 'poem':
-        poems.update({'_id': ObjectId(postID)}, {'$inc': {'views': 1}, '$push': {'viewedBy': userID}})
-    else:
-        poems.update({'_id': ObjectId(postID)}, {'$inc': {'views': 1}, '$push': {'viewedBy': userID}})
-
-    return jsonify([]);
-
-
-@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/dec/<string:type>')
+@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/dec/<string:type>', methods=['PUT'])
 def decrementLikes(userID, postID, type):
-    poems = mongo.db.poems
-    musings = mongo.db.musings
-    prompts = mongo.db.prompts
-    if type == 'poem':
-        poems.update({'_id': ObjectId(postID)}, {'$inc': {'likes': -1}, '$pull': {'likedBy': userID}})
-    elif type == 'musing':
-        musings.update({'_id': ObjectId(postID)}, {'$inc': {'likes': -1}, '$pull': {'likedBy': userID}})
-    else:
-        prompts.update({'_id': ObjectId(postID)}, {'$inc': {'likes': -1}, '$pull': {'likedBy': userID}})
+    get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': -1}, '$pull': {'likedBy': userID}})
     return jsonify([]);
 
 
@@ -142,52 +85,16 @@ def testing_func():
     return current_app.send_static_file('loader_file.txt')
 
 
-# @app.route('/api/v1.0/poems/id/update')
-# def update():
-#     poems=mongo.db.poems
-#     musings=mongo.db.musings
-#     prompts=mongo.db.prompts
-#     poems.update({},{'$set':{'likes':1,'comments':0,'views':1,'likedBy':['Duregm8wDUUoIyG7DQzLKw136hf2'],'viewedBy':['Duregm8wDUUoIyG7DQzLKw136hf2']}},multi=True)
-#     prompts.update({},{'$set':{'likes':1,'comments':0,'views':1,'likedBy':['Duregm8wDUUoIyG7DQzLKw136hf2']}},multi=True)
-#     musings.update({},{'$set':{'likes':1,'comments':0,'views':1,'likedBy':['Duregm8wDUUoIyG7DQzLKw136hf2']}},multi=True)
-
 @app.route('/api/v1.0/users/id/<string:userID>/follow/posts')
 def get_posts_from_who_i_follow(userID):
-    output = []
-    poemsList = []
-    musingsList = []
-    promptsList = []
+    poemsRef = mongo.db.poems
+    musingsRef = mongo.db.musings
+    promptsRef = mongo.db.prompts
+    usersRef = mongo.db.users
     followers = mongo.db.followers
-    poems = mongo.db.poems
-    musings = mongo.db.musings
-    prompts = mongo.db.prompts
     users = followers.find({}, {
-        'followersList': {'$elemMatch': {'_id': ObjectId(userID)}}})
-    # ObjectId.fromDate(datetime.utcnow())
-    #  ISODate("2018-01-24T06:09:42Z")
-
-    for i in users:
-        poemsFound = poems.find({"$and": [{"userID": {'$e': str(i['_id'])}},
-                                          {"_id": {'$gte': ObjectId.fromDate(datetime.utcnow())}}]}).sort('_id',
-                                                                                                          pymongo.ASCENDING)
-        for p in poemsFound:
-            poemsList.append(p)
-        # musings
-        musingsFound = musings.find({"$and": [{"userID": {'$e': str(i['_id'])}},
-                                              {"_id": {'$gte': ObjectId.fromDate(datetime.utcnow())}}]}).sort('_id',
-                                                                                                              pymongo.ASCENDING)
-        for m in musingsFound:
-            musingsList.append(m)
-        # prompts
-        promptsFound = prompts.find({"$and": [{"userID": {'$e': str(i['_id'])}},
-                                              {"_id": {'$gte': ObjectId.fromDate(datetime.utcnow())}}]}).sort('_id',
-                                                                                                              pymongo.ASCENDING)
-        for pr in promptsFound:
-            promptsList.append(pr)
-    output.extend(poemsList)
-    output.extend(promptsList)
-    output.extend(musingsList)
-    return jsonify(output)
+        'followersList': {'$elemMatch': {'_id': userID}}
+        , '_id': 1, 'name': 1, 'usern': 1}).limit(15)
 
 
 @app.route('/api/v1.0/posts/best', endpoint='get_best_posts')
@@ -221,7 +128,7 @@ def get_best_posts():
     return jsonify(posts[:150])
 
 
-@app.route('/api/v1.0/posts/blogs/best' , endpoint='get_best_blogs')
+@app.route('/api/v1.0/posts/blogs/best', endpoint='get_best_blogs')
 def get_best_blogs():
     blogsRef = mongo.db.blogs
     usersRef = mongo.db.users
@@ -230,7 +137,8 @@ def get_best_blogs():
     day = datetime.utcnow().date().day - 1
     date_time_str = str(year) + '-' + str(month) + '-' + str(day)
     dt = datetime.strptime(date_time_str, '%Y-%m-%d')
-    result = list(blogsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING).limit(150))
+    result = list(
+        blogsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING).limit(150))
     app.logger.info(list(result))
     for i in result:
         i['score'] = get_score(i['likes'], i['dislikes'])
@@ -271,7 +179,7 @@ def myuser_follows_otheruser(otherUserID, name, username):
     return jsonify(True)
 
 
-@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>')
+@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>', method=['PUT'])
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
     users = mongo.db.users
@@ -304,6 +212,6 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-#    from api iport *
+    from api import *
 
-    app.run(threaded=True)
+    app.run(host='192.168.1.69', port=5065, debug=False, use_reloader=True)

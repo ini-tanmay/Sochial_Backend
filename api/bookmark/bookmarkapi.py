@@ -3,17 +3,10 @@ import logging as logger
 from app import *
 import pymongo
 
-
 class Bookmark(Resource):
 
     def __init__(self):
         self.dbRef = mongo.db.bookmarks
-
-    # title
-    # photo id
-    # text
-    # timestamp
-    # type
 
     def post(self, userID):
         bookmarkDict = request.get_json(force=True)
@@ -33,6 +26,13 @@ class Bookmark(Resource):
                 output.append(i['bookmarkedPosts'])
             except:
                 return {}, 365
-        if posts.count()<=0:
+        if posts.count() <= 0:
             return {}, 365
         return output[0], 200
+
+    def delete(self, userID):
+        postID = request.args['postID']
+        self.dbRef.update_one({'_id': (userID)},
+                              {'$pull': {'bookmarkedPosts': {'postID': (postID)}}},
+                              )
+        return {}, 200
