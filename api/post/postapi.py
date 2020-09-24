@@ -36,7 +36,6 @@ class Post(Resource):
         if lastDocument is not None:
             lastDocumentID = lastDocument.get('_id')
             app.logger.info(lastDocumentID)
-        if lastDocument is not None:
             lastDocument['timeStamp'] = int(ObjectId(lastDocument['_id']).generation_time.timestamp() * 1000)
             output.append(lastDocument)
         else:

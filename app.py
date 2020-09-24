@@ -3,7 +3,7 @@ from flask_pymongo import PyMongo
 import json
 import logging
 from notificationservice import NotificationService
-from datetime import datetime
+from datetime import datetime, timedelta
 from math import sqrt
 from collections import Counter
 import pymongo
@@ -33,7 +33,7 @@ ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
 
-# from api import *
+from api import *
 
 @app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
 def get_followers_list(userID, last_no):
@@ -84,16 +84,31 @@ def testing_func():
     return current_app.send_static_file('loader_file.txt')
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/follow/posts')
-def get_posts_from_who_i_follow(userID):
+@app.route('/api/v1.0/users/id/<string:userID>/following/posts/<int:page>')
+def get_posts_from_who_i_follow(userID,page):
+    output=[]
     poemsRef = mongo.db.poems
     musingsRef = mongo.db.musings
     promptsRef = mongo.db.prompts
     usersRef = mongo.db.users
     followers = mongo.db.followers
-    users = followers.find({}, {
+    users = list(followers.find_one({}, {
         'followersList': {'$elemMatch': {'_id': userID}}
-        , '_id': 1, 'name': 1, 'usern': 1}).limit(15)
+        , '_id': 1}))
+    DD =timedelta(days=2)
+    dateTime=datetime.utcnow()-DD
+    objID=ObjectId.from_datetime(dateTime)
+    first=max(len(users)-15,page*15)
+    second=max(len(users)-first,(page+1)*15)
+    for user in users[first:second]:
+        result=[]
+        result.extend(poemsRef.find({'$and':[{'userID':user['_id']},{'_id':{'$gte':objID}}]}).sort('_id',pymongo.ASCENDING).limit(3))
+        result.extend(musingsRef.find({'$and':[{'userID':user['_id']},{'_id':{'$gte':objID}}]}).sort('_id',pymongo.ASCENDING).limit(3))
+        result.extend(promptsRef.find({'$and':[{'userID':user['_id']},{'_id':{'$gte':objID}}]}).sort('_id',pymongo.ASCENDING).limit(3))
+        output.extend(result)
+        result.clear()
+    return jsonify(output)
+
 
 
 @app.route('/api/v1.0/posts/best', endpoint='get_best_posts')
@@ -113,11 +128,10 @@ def get_best_posts():
     result.extend(
         list(promptsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING)))
     for i in result:
-        if i['views'] is None:
-            i['views'] = 1
-        i['score'] = get_score(i['likes'], i['views'])
+        i['score'] = get_score(i['likes'], 0)
     posts = sorted(result, key=lambda i: i['score'])
     for i in posts[:150]:
+        i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
         user = usersRef.find_one({'_id': i['userID']}, {'fcm': 1})
         try:
             title = i[title]
@@ -223,6 +237,4 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    from api import *
-
-    app.run(host='192.168.1.69', port=5065, debug=False, use_reloader=True)
+    app.run(threaded=True)
