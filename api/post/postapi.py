@@ -2,7 +2,6 @@ from flask_restful import Resource
 import logging as logger
 from app import *
 import pymongo
-from api.shared import *
 
 
 class Post(Resource):
@@ -38,3 +37,5 @@ class Post(Resource):
             i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
             output.append(i)
         return output, 200
+    def put(self, type):
+        pass

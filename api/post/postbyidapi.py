@@ -3,7 +3,6 @@ import logging as logger
 from app import *
 import pymongo
 from datetime import timezone
-from api.shared import *
 
 
 class PostByID(Resource):
