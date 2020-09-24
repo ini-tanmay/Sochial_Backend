@@ -10,7 +10,6 @@ import pymongo
 from scout_apm.flask import ScoutApm
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
-from api.shared import *
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -35,6 +34,7 @@ app.config["SCOUT_NAME"] = "Sochial"
 
 
 from api import *
+from api.shared import *
 
 @app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
 def get_followers_list(userID, last_no):
