@@ -33,8 +33,7 @@ ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
 
-from api import *
-from api.shared import *
+# from api import *
 
 @app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
 def get_followers_list(userID, last_no):
@@ -162,6 +161,27 @@ def get_score(likes, views):
     phat = float(likes) / n
     return ((phat + z * z / (2 * n) - z * sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n))
 
+def get_db_reference(type):
+    if type == 'poem':
+        return mongo.db.poems
+    elif type == 'blog':
+        return mongo.db.blogs
+    elif type == 'musing':
+        return mongo.db.musings
+    elif type == 'prompt':
+        return mongo.db.prompts
+
+
+def get_commentDB_reference(type):
+    if type == 'poem':
+        return mongo.db.poems.comments
+    elif type == 'blog':
+        return mongo.db.blogs.comments
+    elif type == 'musing':
+        return mongo.db.musings.comments
+    elif type == 'prompt':
+        return mongo.db.prompts.comments
+
 
 @app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
            methods=['POST'])
@@ -212,4 +232,6 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    app.run(threaded=True)
+    from api import *
+
+    app.run(host='192.168.1.69', port=5065, debug=False, use_reloader=True)
