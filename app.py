@@ -10,7 +10,6 @@ import pymongo
 from scout_apm.flask import ScoutApm
 logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
-from api.shared import *
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -162,6 +161,18 @@ def get_score(likes, views):
     phat = float(likes) / n
     return ((phat + z * z / (2 * n) - z * sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n))
 
+def get_db_reference(type):
+    if type == 'poem':
+        return mongo.db.poems
+    elif type == 'blog':
+        return mongo.db.blogs
+    elif type == 'musing':
+        return mongo.db.musings
+    elif type == 'prompt':
+        return mongo.db.prompts
+
+
+
 
 @app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
            methods=['POST'])
@@ -179,7 +190,7 @@ def myuser_follows_otheruser(otherUserID, name, username):
     return jsonify(True)
 
 
-@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>', method=['PUT'])
+@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>', methods=['PUT'])
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
     users = mongo.db.users
