@@ -3,7 +3,16 @@ import logging as logger
 from app import *
 import pymongo
 from datetime import timezone
-from api.shared import *
+
+def get_db_reference(type):
+    if type == 'poem':
+        return mongo.db.poems
+    elif type == 'blog':
+        return mongo.db.blogs
+    elif type == 'musing':
+        return mongo.db.musings
+    elif type == 'prompt':
+        return mongo.db.prompts
 
 
 class PostByID(Resource):

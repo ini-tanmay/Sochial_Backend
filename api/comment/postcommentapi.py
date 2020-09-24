@@ -2,7 +2,26 @@ from flask_restful import Resource
 import logging as logger
 from app import *
 import pymongo
-from api.shared import *
+
+def get_db_reference(type):
+    if type == 'poem':
+        return mongo.db.poems
+    elif type == 'blog':
+        return mongo.db.blogs
+    elif type == 'musing':
+        return mongo.db.musings
+    elif type == 'prompt':
+        return mongo.db.prompts
+
+def get_commentDB_reference(type):
+    if type == 'poem':
+        return mongo.db.poems.comments
+    elif type == 'blog':
+        return mongo.db.blogs.comments
+    elif type == 'musing':
+        return mongo.db.musings.comments
+    elif type == 'prompt':
+        return mongo.db.prompts.comments
 
 
 class PostCommentByID(Resource):
