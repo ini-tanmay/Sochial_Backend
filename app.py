@@ -24,7 +24,7 @@ class MyConfig(object):
 
 
 app = Flask(__name__)
-DB_URI = "mongodb+srv://sochial:voltairemensutrabhai@cluster0.7lovb.mongodb.net/gigat?retryWrites=true&w=majority"
+DB_URI = "mongodb+srv://sochial:7a7ff0b9mensutra@cluster0.7lovb.mongodb.net/gigat?retryWrites=true&w=majority"
 app.config['MONGO_DBNAME'] = 'gigat'
 app.config['MONGO_URI'] = DB_URI
 app.json_encoder = JsonEncoder
