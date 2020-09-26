@@ -18,7 +18,7 @@ class User(Resource):
     def get(self, userID):
         user = self.dbRef.find_one({'_id': userID})
         if user is None:
-            return user, 1234
+            return None, 200
         return user, 200
 
     def put(self, userID):
