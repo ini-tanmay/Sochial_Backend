@@ -18,11 +18,12 @@ restServerInstance = Api(app)
 # PUT     /users/{user_id}                     Create a new user
 # PUT     /users/{user_id}/following/{target}  Follow a user
 # DELETE  /users/{user_id}/following/{target}  Unfollow a user
-restServerInstance.add_resource(User, "/api/v1.0/users/id/<string:userID>")
-restServerInstance.add_resource(Bookmark, "/api/v1.0/users/id/<string:userID>/bookmarks")
+restServerInstance.add_resource(User, "/api/v1.0/user/id/<string:userID>")
+restServerInstance.add_resource(Bookmark, "/api/v1.0/user/id/<string:userID>/bookmarks")
 restServerInstance.add_resource(Post, "/api/v1.0/<string:type>s", endpoint='all_posts')
 restServerInstance.add_resource(PostByID, "/api/v1.0/<string:type>/id/<string:postID>", endpoint='post_by_id')
-restServerInstance.add_resource(PostCommentByID, "/api/v1.0/<string:type>/id/<string:postID>/comments", endpoint='post_comments_by_id')
+restServerInstance.add_resource(PostCommentByID, "/api/v1.0/<string:type>/id/<string:postID>/comments",
+                                endpoint='post_comments_by_id')
 restServerInstance.add_resource(PostsByUserID, "/api/v1.0/<string:type>s/user/id/<string:userID>",
                                 endpoint='posts_by_user_id')
 
@@ -48,8 +49,6 @@ restServerInstance.add_resource(PostsByUserID, "/api/v1.0/<string:type>s/user/id
 #                                 endpoint='blogs_by_user_id')
 
 # get, edit, update, delete comment to a particular post by it's id
-
-
 
 
 from api import *

@@ -4,6 +4,7 @@ from app import *
 import pymongo
 from datetime import timezone
 
+
 def get_db_reference(type):
     if type == 'poem':
         return mongo.db.poems
@@ -22,7 +23,7 @@ class PostByID(Resource):
 
     def post(self, type, postID):
         get_db_reference(type).update({'_id': ObjectId(postID)},
-                                      {'$inc': {'awards': 1}, '$push': {'awardedBy': userID}})
+                                      {'$inc': {'awards': 1}, '$addToSet': {'awardedBy': userID}})
         return {}, 200
 
     def get(self, type, postID):

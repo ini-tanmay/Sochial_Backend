@@ -4,6 +4,7 @@ from app import *
 import pymongo
 from datetime import timezone
 
+
 def get_db_reference(type):
     if type == 'poem':
         return mongo.db.poems
@@ -46,7 +47,7 @@ class PostsByUserID(Resource):
                     app.logger.info(i['viewedBy'])
                 except:
                     get_db_reference(type).update({'_id': ObjectId(postID)},
-                                                  {'$inc': {'views': 1}, '$push': {'viewedBy': userID}})
+                                                  {'$inc': {'views': 1}, '$addToSet': {'viewedBy': userID}})
         return postID, 200
 
     def delete(self, type, userID):

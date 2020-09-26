@@ -11,7 +11,7 @@ class Bookmark(Resource):
     def post(self, userID):
         bookmarkDict = request.get_json(force=True)
         self.dbRef.update_one({'_id': (userID)},
-                              {'$push': {'bookmarkedPosts': bookmarkDict}},
+                              {'$addToSet': {'bookmarkedPosts': bookmarkDict}},
                               upsert=True)
         return {'id': 'true'}, 200
 

@@ -22,6 +22,7 @@ class JsonEncoder(json.JSONEncoder):
 class MyConfig(object):
     RESTFUL_JSON = {'cls': JsonEncoder}
 
+
 app = Flask(__name__)
 DB_URI = "mongodb+srv://sochial:voltairemensutrabhai@cluster0.7lovb.mongodb.net/gigat?retryWrites=true&w=majority"
 app.config['MONGO_DBNAME'] = 'gigat'
@@ -57,7 +58,7 @@ def does_user_follow_otherUser(myUserID, otherUserID):
 
 @app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/inc/<string:type>', methods=['PUT'])
 def incrementLikes(userID, postID, type):
-    get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$push': {'likedBy': userID}})
+    get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
     return jsonify([]);
 
 
@@ -85,8 +86,8 @@ def testing_func():
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/following/posts/<int:page>')
-def get_posts_from_who_i_follow(userID,page):
-    output=[]
+def get_posts_from_who_i_follow(userID, page):
+    output = []
     poemsRef = mongo.db.poems
     musingsRef = mongo.db.musings
     promptsRef = mongo.db.prompts
@@ -95,16 +96,22 @@ def get_posts_from_who_i_follow(userID,page):
     users = list(followers.find_one({}, {
         'followersList': {'$elemMatch': {'_id': userID}}
         , '_id': 1}))
-    DD =timedelta(days=2)
-    dateTime=datetime.utcnow()-DD
-    objID=ObjectId.from_datetime(dateTime)
-    first=max(len(users)-15,page*15)
-    second=max(len(users)-first,(page+1)*15)
+    DD = timedelta(days=2)
+    dateTime = datetime.utcnow() - DD
+    objID = ObjectId.from_datetime(dateTime)
+    first = max(len(users) - 15, page * 15)
+    second = max(len(users) - first, (page + 1) * 15)
     for user in users[first:second]:
-        result=[]
-        result.extend(poemsRef.find({'$and':[{'userID':user['_id']},{'_id':{'$gte':objID}}]}).sort('_id',pymongo.ASCENDING).limit(3))
-        result.extend(musingsRef.find({'$and':[{'userID':user['_id']},{'_id':{'$gte':objID}}]}).sort('_id',pymongo.ASCENDING).limit(3))
-        result.extend(promptsRef.find({'$and':[{'userID':user['_id']},{'_id':{'$gte':objID}}]}).sort('_id',pymongo.ASCENDING).limit(3))
+        result = []
+        result.extend(poemsRef.find({'$and': [{'userID': user['_id']}, {'_id': {'$gte': objID}}]}).sort('_id',
+                                                                                                        pymongo.ASCENDING).limit(
+            3))
+        result.extend(musingsRef.find({'$and': [{'userID': user['_id']}, {'_id': {'$gte': objID}}]}).sort('_id',
+                                                                                                          pymongo.ASCENDING).limit(
+            3))
+        result.extend(promptsRef.find({'$and': [{'userID': user['_id']}, {'_id': {'$gte': objID}}]}).sort('_id',
+                                                                                                          pymongo.ASCENDING).limit(
+            3))
         output.extend(result)
         result.clear()
     return jsonify(output)
@@ -175,6 +182,7 @@ def get_score(likes, views):
     phat = float(likes) / n
     return ((phat + z * z / (2 * n) - z * sqrt((phat * (1 - phat) + z * z / (4 * n)) / n)) / (1 + z * z / n))
 
+
 def get_db_reference(type):
     if type == 'poem':
         return mongo.db.poems
@@ -186,10 +194,16 @@ def get_db_reference(type):
         return mongo.db.prompts
 
 
+@app.route('/api/v1.0/user/id/<string:userID>/b/user/id/<string:otherUserID>',
+           methods=['POST'])
+def myuser_blocks_otheruser(userID, otherUserID):
+    users = mongo.db.users
+    users.update_one({'_id': (userID)}, {'$addToSet': {'blocked': (otherUserID)}}, upsert=True)
+    return jsonify({})
 
 
 @app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
-           methods=['POST'])
+           methods=['POST    '])
 def myuser_follows_otheruser(otherUserID, name, username):
     followers = mongo.db.followers
     users = mongo.db.users
@@ -199,7 +213,7 @@ def myuser_follows_otheruser(otherUserID, name, username):
     NotificationService().send_message(myUserDict['otherFcm'], myUserDict['name'], myUserDict['usern'])
     myUserDict.pop('otherFcm')
     followers.update_one({'_id': (otherUserID)},
-                         {'$push': {'followersList': myUserDict}, '$set': {'name': name, 'usern': username}},
+                         {'$addToSet': {'followersList': myUserDict}, '$set': {'name': name, 'usern': username}},
                          upsert=True)
     return jsonify(True)
 

@@ -3,6 +3,7 @@ import logging as logger
 from app import *
 import pymongo
 
+
 def get_db_reference(type):
     if type == 'poem':
         return mongo.db.poems
@@ -47,5 +48,6 @@ class Post(Resource):
             i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
             output.append(i)
         return output, 200
+
     def put(self, type):
         pass
