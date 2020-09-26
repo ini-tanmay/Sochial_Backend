@@ -22,7 +22,6 @@ class JsonEncoder(json.JSONEncoder):
 class MyConfig(object):
     RESTFUL_JSON = {'cls': JsonEncoder}
 
-
 app = Flask(__name__)
 DB_URI = "mongodb+srv://sochial:7a7ff0b9mensutra@cluster0.7lovb.mongodb.net/gigat?retryWrites=true&w=majority"
 app.config['MONGO_DBNAME'] = 'gigat'
