@@ -47,7 +47,7 @@ class PostCommentByID(Resource):
             output = i['comments']
         for i in output:
             i['timeStamp'] = int(ObjectId(objID).generation_time.timestamp() * 1000)
-        return output, 200
+        return {'_id':objID,'comments':output}, 200
 
     def delete(self, postID, type):
         get_commentDB_reference(type).delete_one({'_id': ObjectId(postID)})
