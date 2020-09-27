@@ -43,7 +43,6 @@ pyasn1-modules==0.2.8
 pycparser==2.20
 pycryptodome==3.9.8
 pyfcm==1.4.7
-PyJWT==1.4.2
 pymongo==3.11.0
 pyOpenSSL==19.1.0
 Pyrebase4==4.4.0

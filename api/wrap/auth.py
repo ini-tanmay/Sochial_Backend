@@ -9,7 +9,9 @@ def authenticate(func):
         try:
             decoded_token = auth.verify_id_token(headers['Authorization'])
             return func(*args, **kwargs)
-        except:
+        except Exception as e:
+            print(e)
+            app.logger.info(e)
             flask_restful.abort(401)
 
     return wrapper
