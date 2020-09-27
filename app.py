@@ -11,6 +11,8 @@ from scout_apm.flask import ScoutApm
 from bson.objectid import ObjectId
 import firebase_admin
 from firebase_admin import credentials
+from firebase_admin import auth
+from functools import wraps
 
 def authenticate(func):
     @wraps(func)
