@@ -2,6 +2,7 @@ import flask_restful
 from flask import request
 from firebase_admin import auth
 from functools import wraps
+
 def authenticate(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -11,6 +12,7 @@ def authenticate(func):
             return func(*args, **kwargs)
         except Exception as e:
             print(e)
+            return str(e)
             flask_restful.abort(401)
 
     return wrapper

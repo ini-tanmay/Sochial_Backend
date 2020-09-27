@@ -8,8 +8,6 @@ from math import sqrt
 from collections import Counter
 import pymongo
 from scout_apm.flask import ScoutApm
-
-logging.basicConfig(level=logging.DEBUG)
 from bson.objectid import ObjectId
 import firebase_admin
 from firebase_admin import credentials
@@ -33,6 +31,7 @@ app.config['MONGO_DBNAME'] = 'gigat'
 app.config['MONGO_URI'] = DB_URI
 app.json_encoder = JsonEncoder
 app.config.from_object(MyConfig)
+# jwt-JWT(app=app)
 mongo = PyMongo(app)
 ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
@@ -238,7 +237,7 @@ def myuser_unfollows_otheruser(myUserID, otherUserID):
 
 
 @app.route('/api/v1.0/users/username/<string:username>')
-def is_username_taken(username):
+def is_usaername_taken(username):
     users = mongo.db.users
     user = users.find_one({'usern': username})
     if user is None:
@@ -253,13 +252,16 @@ def hello():
 
 
 if __name__ == '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
     app.logger.debug("Starting Flask Server")
     try:
-        app.logger.info('checking credential')
         if not firebase_admin._apps:
              cred = credentials.Certificate("static/sochial-readme.json")
              firebase_admin.initialize_app(cred)
     except Exception as e:
         print(e)
-        app.logger.info(str(e))
+        app.logger.error(e)
+
     app.run(threaded=True)
