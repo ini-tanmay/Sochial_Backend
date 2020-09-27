@@ -255,8 +255,11 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    if not firebase_admin._apps:
-         cred = credentials.Certificate("static/sochial-readme.json")
-         firebase_admin.initialize_app(cred)
-
+    try:
+        if not firebase_admin._apps:
+             cred = credentials.Certificate("static/sochial-readme.json")
+             firebase_admin.initialize_app(cred)
+    except Exception as e:
+        print(e)
+        app.logger.info(str(e))
     app.run(threaded=True)
