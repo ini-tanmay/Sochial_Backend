@@ -11,6 +11,7 @@ from scout_apm.flask import ScoutApm
 from bson.objectid import ObjectId
 import firebase_admin
 from firebase_admin import credentials
+from api.wrap.auth import authenticate
 
 
 
@@ -36,10 +37,11 @@ mongo = PyMongo(app)
 ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
 
-
 from api import *
 
+
 @app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
+@authenticate
 def get_followers_list(userID, last_no):
     output = []
     followers = mongo.db.followers
@@ -50,6 +52,7 @@ def get_followers_list(userID, last_no):
 
 
 @app.route('/api/v1.0/users/id/<string:myUserID>/follows/<string:otherUserID>/check', endpoint='check_if_i_f_o')
+@authenticate
 def does_user_follow_otherUser(myUserID, otherUserID):
     followers = mongo.db.followers
     user = followers.find({'_id': otherUserID}, {'followersList': {'$elemMatch': {'_id': myUserID}}})
@@ -60,18 +63,21 @@ def does_user_follow_otherUser(myUserID, otherUserID):
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/inc/<string:type>', methods=['PUT'])
+@authenticate
 def incrementLikes(userID, postID, type):
     get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
     return jsonify([]);
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/dec/<string:type>', methods=['PUT'])
+@authenticate
 def decrementLikes(userID, postID, type):
     get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': -1}, '$pull': {'likedBy': userID}})
     return jsonify([]);
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/following')
+@authenticate
 def get_following_list(userID):
     output = []
     followers = mongo.db.followers
@@ -89,6 +95,7 @@ def testing_func():
 
 
 @app.route('/api/v1.0/users/id/<string:userID>/following/posts/<int:page>')
+@authenticate
 def get_posts_from_who_i_follow(userID, page):
     output = []
     poemsRef = mongo.db.poems
@@ -121,6 +128,7 @@ def get_posts_from_who_i_follow(userID, page):
 
 
 @app.route('/api/v1.0/posts/best', endpoint='get_best_posts')
+@authenticate
 def get_best_posts():
     poemsRef = mongo.db.poems
     musingsRef = mongo.db.musings
@@ -151,6 +159,7 @@ def get_best_posts():
 
 
 @app.route('/api/v1.0/posts/blogs/best', endpoint='get_best_blogs')
+@authenticate
 def get_best_blogs():
     blogsRef = mongo.db.blogs
     usersRef = mongo.db.users
@@ -198,6 +207,7 @@ def get_db_reference(type):
 
 @app.route('/api/v1.0/user/id/<string:userID>/b/user/id/<string:otherUserID>',
            methods=['POST'])
+@authenticate
 def myuser_blocks_otheruser(userID, otherUserID):
     users = mongo.db.users
     users.update_one({'_id': (userID)}, {'$addToSet': {'blocked': (otherUserID)}}, upsert=True)
@@ -206,6 +216,7 @@ def myuser_blocks_otheruser(userID, otherUserID):
 
 @app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
            methods=['POST'])
+@authenticate
 def myuser_follows_otheruser(otherUserID, name, username):
     followers = mongo.db.followers
     users = mongo.db.users
@@ -221,6 +232,7 @@ def myuser_follows_otheruser(otherUserID, name, username):
 
 
 @app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>', methods=['PUT'])
+@authenticate
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
     users = mongo.db.users
@@ -237,7 +249,8 @@ def myuser_unfollows_otheruser(myUserID, otherUserID):
 
 
 @app.route('/api/v1.0/users/username/<string:username>')
-def is_usaername_taken(username):
+@authenticate
+def is_username_taken(username):
     users = mongo.db.users
     user = users.find_one({'usern': username})
     if user is None:
@@ -248,7 +261,7 @@ def is_usaername_taken(username):
 
 @app.route('/')
 def hello():
-    return 'Hey'
+    return redirect("https://sochial.media.com", code=302)
 
 try:
     if not firebase_admin._apps:
@@ -267,5 +280,4 @@ if __name__ != '__main__':
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-
     app.run(threaded=True)
