@@ -250,6 +250,15 @@ def is_usaername_taken(username):
 def hello():
     return 'Hey'
 
+try:
+    if not firebase_admin._apps:
+        cred = credentials.Certificate("static/sochial-readme.json")
+        firebase_admin.initialize_app(cred)
+except Exception as e:
+    print(e)
+    app.logger.error(e)
+
+
 if __name__ != '__main__':
     gunicorn_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers = gunicorn_logger.handlers
@@ -258,12 +267,5 @@ if __name__ != '__main__':
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
-    try:
-        if not firebase_admin._apps:
-             cred = credentials.Certificate("static/sochial-readme.json")
-             firebase_admin.initialize_app(cred)
-    except Exception as e:
-        print(e)
-        app.logger.error(e)
 
     app.run(threaded=True)
