@@ -2,7 +2,7 @@ import flask_restful
 from flask import request
 from firebase_admin import auth
 from functools import wraps
-from app import app
+from app import *
 
 def authenticate(func):
     @wraps(func)

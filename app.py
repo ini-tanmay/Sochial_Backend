@@ -261,7 +261,7 @@ def is_username_taken(username):
 
 @app.route('/')
 def hello():
-    return redirect("https://sochial.media.com", code=302)
+    return redirect("https://www.sochial.media.com", code=302)
 
 try:
     if not firebase_admin._apps:
