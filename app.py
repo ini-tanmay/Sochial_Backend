@@ -11,7 +11,20 @@ from scout_apm.flask import ScoutApm
 from bson.objectid import ObjectId
 import firebase_admin
 from firebase_admin import credentials
-from api.wrap.auth import authenticate
+
+def authenticate(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        headers = request.headers
+        try:
+            decoded_token = auth.verify_id_token(headers['Authorization'])
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(e)
+            app.logger.info(e)
+            flask_restful.abort(401)
+
+    return wrapper
 
 
 

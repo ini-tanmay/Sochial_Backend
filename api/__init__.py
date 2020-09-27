@@ -1,5 +1,5 @@
 from flask_restful import Api
-from app import *
+from app import app
 from api.user.userapi import User
 from api.post.postapi import Post
 from api.post.postbyidapi import PostByID
