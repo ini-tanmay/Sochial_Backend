@@ -1,10 +1,10 @@
-from flask_restful import Resource
+from api.wrap.auth import AppResource
 import logging as logger
 from app import *
 import json
 
 
-class User(Resource):
+class User(AppResource):
 
     def __init__(self):
         self.dbRef = mongo.db.users

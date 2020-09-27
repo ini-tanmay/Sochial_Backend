@@ -3,7 +3,6 @@ from flask import request
 from firebase_admin import auth
 from functools import wraps
 from app import *
-
 def authenticate(func):
     @wraps(func)
     def wrapper(*args, **kwargs):

@@ -1,4 +1,4 @@
-from flask_restful import Resource
+from api.wrap.auth import AppResource
 import logging as logger
 from app import *
 import pymongo
@@ -26,7 +26,7 @@ def get_commentDB_reference(type):
         return mongo.db.prompts.comments
 
 
-class PostCommentByID(Resource):
+class PostCommentByID(AppResource):
 
     def __init__(self):
         pass

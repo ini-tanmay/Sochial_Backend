@@ -1,9 +1,9 @@
-from flask_restful import Resource
+from api.wrap.auth import AppResource
 import logging as logger
 from app import *
 import pymongo
 
-class Bookmark(Resource):
+class Bookmark(AppResource):
 
     def __init__(self):
         self.dbRef = mongo.db.bookmarks

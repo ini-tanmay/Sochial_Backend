@@ -1,4 +1,4 @@
-from flask_restful import Resource
+from api.wrap.auth import AppResource
 import logging as logger
 from app import *
 import pymongo
@@ -16,7 +16,7 @@ def get_db_reference(type):
         return mongo.db.prompts
 
 
-class PostsByUserID(Resource):
+class PostsByUserID(AppResource):
 
     def __init__(self):
         pass
