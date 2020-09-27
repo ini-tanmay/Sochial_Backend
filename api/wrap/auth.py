@@ -11,7 +11,6 @@ def authenticate(func):
             return func(*args, **kwargs)
         except Exception as e:
             print(e)
-            app.logger.info(e)
             flask_restful.abort(401)
 
     return wrapper
