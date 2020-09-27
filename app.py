@@ -15,9 +15,6 @@ import firebase_admin
 from firebase_admin import credentials
 from flask_jwt import JWT
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate("static/sochial-readme.json")
-    firebase_admin.initialize_app(cred)
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -37,7 +34,6 @@ app.config['MONGO_DBNAME'] = 'gigat'
 app.config['MONGO_URI'] = DB_URI
 app.json_encoder = JsonEncoder
 app.config.from_object(MyConfig)
-# jwt-JWT(app=app)
 mongo = PyMongo(app)
 ScoutApm(app)
 app.config["SCOUT_NAME"] = "Sochial"
@@ -259,4 +255,8 @@ def hello():
 
 if __name__ == '__main__':
     app.logger.debug("Starting Flask Server")
+    if not firebase_admin._apps:
+         cred = credentials.Certificate("static/sochial-readme.json")
+         firebase_admin.initialize_app(cred)
+
     app.run(threaded=True)
