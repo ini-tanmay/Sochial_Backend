@@ -1,8 +1,7 @@
-from flask_restful import Resource
 import logging as logger
 from app import *
 import pymongo
-
+from api.wrap.auth import AppResource
 
 def get_db_reference(type):
     if type == 'poem':
@@ -16,7 +15,7 @@ def get_db_reference(type):
 
 
 
-class Post(Resource):
+class Post(AppResource):
 
     def __init__(self):
         pass

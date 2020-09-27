@@ -1,6 +1,6 @@
 import azure.cognitiveservices.speech as speechsdk
 
-speech_key, service_region = "fc813bde2c194491b528da6cd361354e", "uksouth"
+speech_key, service_region = "58ccca43a76942cdbdeb0c1809498cff", "uksouth"
 
 
 class TTSService:

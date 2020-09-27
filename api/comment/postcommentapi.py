@@ -43,9 +43,8 @@ class PostCommentByID(Resource):
     def get(self, postID, type):
         output = list(get_commentDB_reference(type).find({'_id': ObjectId(postID)}))
         if len(output) == 0:
-            return {'_id':'error'}, 200
+            return {}, 1234
         for i in output:
-            objID = i['_id']
             output = i['comments']
         for i in output:
             i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)

@@ -7,7 +7,7 @@ class NotificationService:
 
     def __init__(self):
         self.push_service = FCMNotification(
-            api_key='AAAACF33vmU:APA91bEbusaYFTevZojcCfM_h3Q9B4vc8PRegcL_AC0y9mBJqQsugkomUp7dO-iTRPqrpaAWAKrw5dO_gHiqhYotg11fBXLVkMmOycR8H2Uh3jaYgKMieZBlec-MLKopD-cCihchkrd1')
+            api_key='AAAACF33vmU:APA91bEyseN_arsvODwTTmSFclgT5u_RzeWF4YBvvrOGHklfeEIPbAPIDZu38t3mazcbOMSRvu-iATCeRFmaPLckhhbe3YFVbMlGzsIs-78CrpXG7eKWxxFS3AVtA6pNb1p3R2mT4Zou')
 
     def send_message(self, fcmToken, name, username):
         index = datetime.now().minute % 3
