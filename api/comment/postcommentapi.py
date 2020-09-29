@@ -33,22 +33,23 @@ class PostCommentByID(AppResource):
 
     def post(self, postID, type):
         commentDict = request.get_json(force=True)
-        get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'comments': 1}})
-        doc_id = get_commentDB_reference(type).update({'_id': ObjectId(postID)},
+        get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': 1}})
+        doc_id = get_commentDB_reference(type).update_one({'_id': ObjectId(postID)},
                                                       {'$addToSet': {'comments': commentDict}},
                                                       upsert=True)
 
         return {}, 200
 
     def get(self, postID, type):
-        output = list(get_commentDB_reference(type).find({'_id': ObjectId(postID)}))
-        if len(output) == 0:
-            return {}, 1234
-        for i in output:
+        output=[]
+        comments = list(get_commentDB_reference(type).find({'_id': ObjectId(postID)}))
+        if len(comments) == 0:
+            return [], 200
+        for i in comments:
             output = i['comments']
         for i in output:
             i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
-        return {'_id': objID, 'comments': output}, 200
+        return output, 200
 
     def delete(self, postID, type):
         get_commentDB_reference(type).delete_one({'_id': ObjectId(postID)})
