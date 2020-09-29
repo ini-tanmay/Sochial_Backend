@@ -47,8 +47,6 @@ class PostCommentByID(AppResource):
             return [], 200
         for i in comments:
             output = i['comments']
-        for i in output:
-            i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
         return output, 200
 
     def delete(self, postID, type):
