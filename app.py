@@ -141,7 +141,6 @@ def get_posts_from_who_i_follow(userID, page):
         result.clear()
     return jsonify(output)
 
-
 @app.route('/api/v1.0/posts/best', endpoint='get_best_posts')
 @authenticate
 def get_best_posts():
@@ -149,27 +148,21 @@ def get_best_posts():
     musingsRef = mongo.db.musings
     promptsRef = mongo.db.prompts
     usersRef = mongo.db.users
-    year = datetime.utcnow().date().year
-    month = datetime.utcnow().date().month
-    day = datetime.utcnow().date().day - 1
-    date_time_str = str(year) + '-' + str(month) + '-' + str(day)
-    dt = datetime.strptime(date_time_str, '%Y-%m-%d')
-    result = list(poemsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING))
+    dt = datetime.now()-timedelta(days=30)
+    result = list(poemsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(100))
     result.extend(
-        list(musingsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING)))
+        list(musingsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(25)))
     result.extend(
-        list(promptsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING)))
-    for i in result:
-        i['score'] = get_score(i['likes'], 0)
-    posts = sorted(result, key=lambda i: i['score'])
+        list(promptsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(25)))
+    posts = sorted(result, key=lambda i: i['likes'])
     for i in posts[:150]:
         i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
         user = usersRef.find_one({'_id': i['userID']}, {'fcm': 1})
-        try:
-            title = i[title]
-        except:
-            title = None
-        NotificationService().send_featured_message(user['fcm'], title, i['text'])
+        # try:
+        #     title = i[title]
+        # except:
+        #     title = None
+        # NotificationService().send_featured_message(user['fcm'], title, i['text'])
     return jsonify(posts[:150])
 
 
@@ -191,11 +184,11 @@ def get_best_blogs():
     posts = sorted(result, key=lambda i: i['score'])
     for i in posts[:150]:
         user = usersRef.find_one({'_id': i['userID']}, {'fcm': 1})
-        try:
-            title = i[title]
-        except:
-            title = None
-        NotificationService().send_featured_message(user['fcm'], title)
+        # try:
+        #     title = i[title]
+        # except:
+        #     title = None
+        # NotificationService().send_featured_message(user['fcm'], title)
     return jsonify(posts[:150])
 
 

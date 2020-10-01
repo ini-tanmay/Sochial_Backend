@@ -41,7 +41,7 @@ class PostCommentByID(AppResource):
         return {}, 200
 
     def get(self, postID, type):
-        output=[]
+        output = []
         comments = list(get_commentDB_reference(type).find({'_id': ObjectId(postID)}))
         if len(comments) == 0:
             return [], 200

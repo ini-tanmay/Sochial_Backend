@@ -14,7 +14,6 @@ def get_db_reference(type):
         return mongo.db.prompts
 
 
-
 class Post(AppResource):
 
     def __init__(self):
@@ -27,6 +26,7 @@ class Post(AppResource):
 
     def get(self, type):
         output = []
+
         lastDocument = None
         limit = int(request.args['limit'])
         try:

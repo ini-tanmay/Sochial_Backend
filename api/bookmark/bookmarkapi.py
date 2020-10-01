@@ -3,6 +3,7 @@ import logging as logger
 from app import *
 import pymongo
 
+
 class Bookmark(AppResource):
 
     def __init__(self):
