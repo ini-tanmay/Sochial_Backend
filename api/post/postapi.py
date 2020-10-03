@@ -34,7 +34,7 @@ class Post(AppResource):
             lastDocumentID = request.args['last_id']
         except:
             firstDocument = (get_db_reference(type).find_one(sort=[('_id', pymongo.ASCENDING)]))
-            i['timeStamp'] = int(ObjectId(firstDocument['_id']).generation_time.timestamp() * 1000)
+            firstDocument['timeStamp'] = int(ObjectId(firstDocument['_id']).generation_time.timestamp() * 1000)
             return firstDocument,200
         posts = get_db_reference(type).find({'_id': {'$gt': ObjectId((lastDocumentID))}}).sort('_id',
                                                                                                pymongo.ASCENDING).limit(limit)
