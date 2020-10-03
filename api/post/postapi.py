@@ -25,24 +25,19 @@ class Post(AppResource):
         return {'id': doc_id}, 200
 
     def get(self, type):
+        # if last id is null return first few items upto the limit
+        # if last id is not null return all items from the next item of last id upto the limit
         output = []
-
-        lastDocument = None
+        firstDocument = None
         limit = int(request.args['limit'])
         try:
             lastDocumentID = request.args['last_id']
-        except Exception as e:
-            lastDocument = get_db_reference(type).find_one(sort=[('_id', pymongo.ASCENDING)])
-        if lastDocument is not None:
-            lastDocumentID = lastDocument.get('_id')
-            app.logger.info(lastDocumentID)
-            lastDocument['timeStamp'] = int(ObjectId(lastDocument['_id']).generation_time.timestamp() * 1000)
-            output.append(lastDocument)
-        else:
-            return [], 200
+        except:
+            firstDocument = (get_db_reference(type).find_one(sort=[('_id', pymongo.ASCENDING)]))
+            i['timeStamp'] = int(ObjectId(firstDocument['_id']).generation_time.timestamp() * 1000)
+            return firstDocument,200
         posts = get_db_reference(type).find({'_id': {'$gt': ObjectId((lastDocumentID))}}).sort('_id',
-                                                                                               pymongo.ASCENDING).limit(
-            limit)
+                                                                                               pymongo.ASCENDING).limit(limit)
         for i in posts:
             i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
             output.append(i)
