@@ -20,6 +20,8 @@ class Post(AppResource):
         pass
 
     def post(self, type):
+        userID=request.args['userID']
+        self.users.update_one({'_id':userID},{'$inc':{'posts':1}})
         postDict = request.get_json(force=True)
         doc_id = get_db_reference(type).insert_one(postDict).inserted_id
         return {'id': doc_id}, 200
