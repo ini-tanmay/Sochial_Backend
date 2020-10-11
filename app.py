@@ -55,7 +55,7 @@ app.config["SCOUT_NAME"] = "Sochial"
 from api import *
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
+@app.route('/api/v1.0/user/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
 @authenticate
 def get_followers_list(userID, last_no):
     output = []
@@ -66,80 +66,85 @@ def get_followers_list(userID, last_no):
     return jsonify(output)
 
 
-@app.route('/api/v1.0/users/id/<string:myUserID>/follows/<string:otherUserID>/check', endpoint='check_if_i_f_o')
+@app.route('/api/v1.0/user/id/<string:userID>/following/<int:last_no>', endpoint='get_following')
+@authenticate
+def get_following_list(userID, last_no):
+    output = []
+    following = mongo.db.following
+    users = following.find({'_id': userID}, {'followingList': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
+    for i in users:
+        output.append(i['followingList'])
+    return jsonify(output)
+
+
+@app.route('/api/v1.0/user/id/<string:myUserID>/follows/<string:otherUserID>/check', endpoint='check_if_i_f_o')
 @authenticate
 def does_user_follow_otherUser(myUserID, otherUserID):
-    followers = mongo.db.followers
-    user = followers.find({'_id': otherUserID}, {'followersList': {'$elemMatch': {'_id': myUserID}}})
-    for i in user:
-        if 'followersList' in i:
-            return jsonify(True)
+    following = mongo.db.following
+    user = followers.find({'_id': myUserID}, {'followingList': {'$elemMatch': {'userID': otherUserID}}})
+    if 'followingList' in list(user)[0]:
+        return jsonify(True)
     return jsonify(False)
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/l/inc/<string:type>', methods=['PUT'])
+@app.route('/api/v1.0/user/id/<string:userID>/l/<string:type>/id/<string:postID>', methods=['PUT'])
 @authenticate
 def incrementLikes(userID, postID, type):
     get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
-    return jsonify([]);
+    return jsonify([])
 
 
-@app.route('/api/v1.0/users/id/<string:userID>/posts/id/<string:postID>/dec/<string:type>', methods=['PUT'])
+@app.route('/api/v1.0/user/id/<string:userID>/dl/<string:type>/id/<string:postID>', methods=['PUT'])
 @authenticate
 def decrementLikes(userID, postID, type):
+    if (type == blog):
+        get_db_reference(type).update({'_id': ObjectId(postID)},
+                                      {'$inc': {'dislikes': 1}, '$push': {'likedBy': userID}})
+        return jsonify(True)
     get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': -1}, '$pull': {'likedBy': userID}})
-    return jsonify([]);
-
-
-@app.route('/api/v1.0/users/id/<string:userID>/following')
-@authenticate
-def get_following_list(userID):
-    output = []
-    followers = mongo.db.followers
-    users = followers.find({}, {
-        'followersList': {'$elemMatch': {'_id': userID}}
-        , '_id': 1, 'name': 1, 'usern': 1})
-    for i in users:
-        output.append(i)
-    return jsonify(output)
+    return jsonify([])
 
 
 @app.route('/loaderio-5766de92b38d3cc2e912db60eeb642db.txt')
 def testing_func():
     return current_app.send_static_file('loader_file.txt')
 
-
-@app.route('/api/v1.0/users/id/<string:userID>/following/posts/<int:page>')
+@app.route('/api/v1.0/userr/id/<string:userID>/following/posts/<int:last_no>')
 @authenticate
-def get_posts_from_who_i_follow(userID, page):
+def get_posts_from_who_i_follow(userID,last_no):
     output = []
-    poemsRef = mongo.db.poems
-    musingsRef = mongo.db.musings
-    promptsRef = mongo.db.prompts
-    usersRef = mongo.db.users
-    followers = mongo.db.followers
-    users = list(followers.find_one({}, {
-        'followersList': {'$elemMatch': {'_id': userID}}
-        , '_id': 1}))
-    DD = timedelta(days=2)
-    dateTime = datetime.utcnow() - DD
-    objID = ObjectId.from_datetime(dateTime)
-    first = max(len(users) - 15, page * 15)
-    second = max(len(users) - first, (page + 1) * 15)
-    for user in users[first:second]:
-        result = []
-        result.extend(poemsRef.find({'$and': [{'userID': user['_id']}, {'_id': {'$gte': objID}}]}).sort('_id',
-                                                                                                        pymongo.ASCENDING).limit(
-            3))
-        result.extend(musingsRef.find({'$and': [{'userID': user['_id']}, {'_id': {'$gte': objID}}]}).sort('_id',
-                                                                                                          pymongo.ASCENDING).limit(
-            3))
-        result.extend(promptsRef.find({'$and': [{'userID': user['_id']}, {'_id': {'$gte': objID}}]}).sort('_id',
-                                                                                                          pymongo.ASCENDING).limit(
-            3))
-        output.extend(result)
-        result.clear()
+    following=mongo.db.following
+    output = list(following.find({'_id': userID}, {'feed': {'$slice': [last_no * 10, (last_no + 1) * 10]}}))
     return jsonify(output)
+
+
+
+# @app.route('/api/v1.0/following/posts', methods=['POST'])
+# @authenticate
+# def get_posts_from_who_i_follow():
+#     output = []
+#     poemsRef = mongo.db.poems
+#     musingsRef = mongo.db.musings
+#     promptsRef = mongo.db.prompts
+#     DD = timedelta(days=40)
+#     users = request.get_json(force=True)['users']
+#     dateTime = datetime.utcnow() - DD
+#     objID = ObjectId.from_datetime(dateTime)
+#     app.logger.info(users)
+#     app.logger.info(type(users))
+#     for user in users:
+#         output.extend(poemsRef.find({'$and': [{'userID': user}, {'_id': {'$gte': objID}}]}).sort('_id',
+#                                                                                                  pymongo.ASCENDING).limit(
+#             2))
+#         output.extend(musingsRef.find({'$and': [{'userID': user}, {'_id': {'$gte': objID}}]}).sort('_id',
+#                                                                                                    pymongo.ASCENDING).limit(
+#             2))
+#         output.extend(promptsRef.find({'$and': [{'userID': user}, {'_id': {'$gte': objID}}]}).sort('_id',
+#                                                                                                    pymongo.ASCENDING).limit(
+#             2))
+#     # if len(output)<=5:
+#     return jsonify(output)
+
 
 @app.route('/api/v1.0/posts/best', endpoint='get_best_posts')
 @authenticate
@@ -148,12 +153,15 @@ def get_best_posts():
     musingsRef = mongo.db.musings
     promptsRef = mongo.db.prompts
     usersRef = mongo.db.users
-    dt = datetime.now()-timedelta(days=30)
-    result = list(poemsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(100))
+    dt = datetime.now() - timedelta(days=30)
+    result = list(
+        poemsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(100))
     result.extend(
-        list(musingsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(25)))
+        list(
+            musingsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(25)))
     result.extend(
-        list(promptsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(25)))
+        list(
+            promptsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('likes', pymongo.DESCENDING).limit(25)))
     posts = sorted(result, key=lambda i: i['likes'])
     for i in posts[:150]:
         i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
@@ -171,30 +179,32 @@ def get_best_posts():
 def get_best_blogs():
     blogsRef = mongo.db.blogs
     usersRef = mongo.db.users
-    year = datetime.utcnow().date().year
-    month = datetime.utcnow().date().month
-    day = datetime.utcnow().date().day - 1
-    date_time_str = str(year) + '-' + str(month) + '-' + str(day)
-    dt = datetime.strptime(date_time_str, '%Y-%m-%d')
-    result = list(
-        blogsRef.find({'_id': {'$gte': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING).limit(150))
+    dt = datetime.utcnow() - timedelta(days=30)
+    try:
+        lastID = request.args['last_id']
+        result = list(
+            blogsRef.find({'_id': {'$gt': ObjectId(lastID)}}).sort('_id', pymongo.ASCENDING).limit(4))
+    except:
+        result = list(
+            blogsRef.find({'_id': {'$gt': ObjectId.from_datetime(dt)}}).sort('_id', pymongo.ASCENDING).limit(4))
+
     app.logger.info(list(result))
     for i in result:
-        i['score'] = get_score(i['likes'], i['dislikes'])
+        i['score'] = get_score(i['likes'] + 1, i['dislikes'] + 1)
     posts = sorted(result, key=lambda i: i['score'])
     for i in posts[:150]:
-        user = usersRef.find_one({'_id': i['userID']}, {'fcm': 1})
-        # try:
-        #     title = i[title]
-        # except:
-        #     title = None
-        # NotificationService().send_featured_message(user['fcm'], title)
+        i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
+    #     user = usersRef.find_one({'_id': i['userID']}, {'fcm': 1})
+    # try:
+    #     title = i[title]
+    # except:
+    #     title = None
+    # NotificationService().send_featured_message(user['fcm'], title)
     return jsonify(posts[:150])
 
 
 def get_score(likes, views):
-    downs = views - likes
-    n = likes - 1 + downs
+    n = views - likes
     if n <= 0:
         return 0
     z = 1.44  # 1.44 = 85%, 1.96 = 95%
@@ -222,37 +232,46 @@ def myuser_blocks_otheruser(userID, otherUserID):
     return jsonify({})
 
 
-@app.route('/api/v1.0/users/id/<string:otherUserID>/name/<string:name>/username/<string:username>/follow',
+@app.route('/api/v1.0/<string:userID>/r/<string:type>/id/<string:postID>',
            methods=['POST'])
 @authenticate
-def myuser_follows_otheruser(otherUserID, name, username):
+def report_post(userID, type, postID):
+    reported = mongo.db.reported
+    reported.update_one({'_id': ObjectId(postID)}, {'$addToSet': userID}, {'$set': {'type': type}},upsert=True)
+    return jsonify({})
+
+
+@app.route('/api/v1.0/follow',
+           methods=['POST'])
+@authenticate
+def myuser_follows_otheruser():
     followers = mongo.db.followers
-    users = mongo.db.users
-    myUserDict = dict(request.get_json(force=True))
-    users.update_one({'_id': myUserDict['_id']}, {'$inc': {'following': 1}})
-    users.update_one({'_id': (otherUserID)}, {'$inc': {'followers': 1}})
-    NotificationService().send_message(myUserDict['otherFcm'], myUserDict['name'], myUserDict['usern'])
-    myUserDict.pop('otherFcm')
+    following = mongo.db.following
+    otherFcmToken=request.args['server_log']
+    myUserDict = dict(request.get_json(force=True))['my']
+    otherUserDict=dict(request.get_json(force=True))['other']
+    users.update_one({'_id': myUserDict['userID']}, {'$inc': {'following': 1}})
+    users.update_one({'_id': otherUserDict['userID']}, {'$inc': {'followers': 1}})
+    NotificationService().send_message(otherFcmToken, myUserDict['name'], myUserDict['usern'])
     followers.update_one({'_id': (otherUserID)},
-                         {'$addToSet': {'followersList': myUserDict}, '$set': {'name': name, 'usern': username}},
+                         {'$addToSet': {'followersList': myUserDict}},
+                         upsert=True)
+    following.update_one({'_id': (myUserDict['userID'])},
+                         {'$addToSet': {'followingList': otherUserDict}},
                          upsert=True)
     return jsonify(True)
 
 
-@app.route('/api/v1.0/users/id/<string:myUserID>/unfollow/<string:otherUserID>', methods=['PUT'])
+@app.route('/api/v1.0/user/id/<string:myUserID>/unfollowed/<string:otherUserID>', methods=['DELETE'])
 @authenticate
 def myuser_unfollows_otheruser(myUserID, otherUserID):
     followers = mongo.db.followers
-    users = mongo.db.users
+    following = mongo.db.following
     users.update_one({'_id': (myUserID)}, {'$inc': {'following': -1}})
-    users.update_one({'_id': (otherUserID)}, {'$inc': {'followers': -1}})
-    followers.update(
-        {"_id": (otherUserID)},
-        {
-            "$pull": {
-                "followersList": {"_id": (myUserID)}
-            }
-        })
+    users.update_one({'_id': (otherUserID)},
+                     {'$inc': {'followers': -1}})
+    followers.update_one({'_id': otherUserID}, {'$pull': {'followersList': myUserID}})
+    following.update_one({'_id': myUserID}, {'$pull': {'followingList': otherUserID}})
     return jsonify(True)
 
 

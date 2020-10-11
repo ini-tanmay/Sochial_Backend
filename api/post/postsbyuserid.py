@@ -22,10 +22,13 @@ class PostsByUserID(AppResource):
         pass
 
     def post(self, type, userID):
-        # increment plays
-        if type == 'blog':
-            blogID = request.args['blogID']
-            dbRef.update({'_id': ObjectId(blogID)}, {'$inc': {'plays': 1}})
+        # report user id
+        postID = request.args['postID']
+        dbRef = mongo.db.reports
+        if type == 'profile':
+            dbRef.update_one({'_id': (postID)}, {'$set': {'type': type}, '$addToSet': {'reporters': userID}})
+        else:
+            dbRef.update_one({'_id': ObjectId(postID)}, {'$set': {'type': type}, '$addToSet': {'reporters': userID}})
         return {}, 200
 
     def get(self, type, userID):
@@ -38,17 +41,11 @@ class PostsByUserID(AppResource):
 
     def put(self, type, userID):
         # increment views
+        postID = request.args['postID']
         if type == 'poem' or type == 'blog':
-            postID = request.args['postID']
-            posts = get_db_reference(type).find({'_id': ObjectId(postID)},
-                                                {'viewedBy': {'$elemMatch': {'$eq': userID}}})
-            for i in posts:
-                try:
-                    app.logger.info(i['viewedBy'])
-                except:
-                    get_db_reference(type).update({'_id': ObjectId(postID)},
-                                                  {'$inc': {'views': 1}, '$addToSet': {'viewedBy': userID}})
-        return postID, 200
+            get_db_reference(type).update({'_id': ObjectId(postID)},
+                                          {'$inc': {'views': 1}, '$addToSet': {'viewedBy': userID}})
+            return postID, 200
 
     def delete(self, type, userID):
         pass

@@ -37,7 +37,6 @@ class PostCommentByID(AppResource):
         doc_id = get_commentDB_reference(type).update_one({'_id': ObjectId(postID)},
                                                       {'$addToSet': {'comments': commentDict}},
                                                       upsert=True)
-
         return {}, 200
 
     def get(self, postID, type):
@@ -51,4 +50,5 @@ class PostCommentByID(AppResource):
 
     def delete(self, postID, type):
         get_commentDB_reference(type).delete_one({'_id': ObjectId(postID)})
+        get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': -1}})
         return {}, 200

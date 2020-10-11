@@ -11,10 +11,11 @@ class Bookmark(AppResource):
 
     def post(self, userID):
         bookmarkDict = request.get_json(force=True)
+        app.logger.info(bookmarkDict)
         self.dbRef.update_one({'_id': (userID)},
                               {'$addToSet': {'bookmarkedPosts': bookmarkDict}},
                               upsert=True)
-        return {'id': 'true'}, 200
+        return {}, 200
 
     def get(self, userID):
         last_no = 0
