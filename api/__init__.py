@@ -6,6 +6,8 @@ from api.post.postbyidapi import PostByID
 from api.post.postsbyuserid import PostsByUserID
 from api.bookmark.bookmarkapi import Bookmark
 from api.comment.postcommentapi import PostCommentByID
+from api.comment.commentreplyapi import CommentReplyByID
+from api.snippet.snippetsbypromptid import SnippetsByPromptID
 
 restServerInstance = Api(app)
 
@@ -21,9 +23,12 @@ restServerInstance = Api(app)
 restServerInstance.add_resource(User, "/api/v1.0/user/id/<string:userID>")
 restServerInstance.add_resource(Bookmark, "/api/v1.0/user/id/<string:userID>/bookmarks")
 restServerInstance.add_resource(Post, "/api/v1.0/<string:type>s", endpoint='all_posts')
+restServerInstance.add_resource(SnippetsByPromptID, "/api/v1.0/snippets/<string:promptID>", endpoint='get_snippets_by_id')
 restServerInstance.add_resource(PostByID, "/api/v1.0/<string:type>/id/<string:postID>", endpoint='post_by_id')
 restServerInstance.add_resource(PostCommentByID, "/api/v1.0/<string:type>/id/<string:postID>/comments",
                                 endpoint='post_comments_by_id')
+restServerInstance.add_resource(CommentReplyByID, "/api/v1.0/<string:type>/id/<string:postID>/comment/<int:timeStamp>",
+                                endpoint='post_comment_reply_by_id')
 restServerInstance.add_resource(PostsByUserID, "/api/v1.0/<string:type>s/user/id/<string:userID>",
                                 endpoint='posts_by_user_id')
 

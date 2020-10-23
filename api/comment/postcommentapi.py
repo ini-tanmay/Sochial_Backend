@@ -26,29 +26,47 @@ def get_commentDB_reference(type):
         return mongo.db.prompts.comments
 
 
+    # def put(self, postID, type):
+    #     timeStamp = int(request.args['ts'])
+    #     userID = int(request.args['userID'])
+    #     action = (request.args['action'])
+    #     if action == 'up':
+    #         get_commentDB_reference(type).update_one({'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
+    #                                                  {'$inc': {"comments.$.likes": 1},
+    #                                                   '$addToSet': {'likedBy': userID}})
+    #     elif action == 'down':
+    #         get_commentDB_reference(type).update_one({'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
+    #                                                  {'$inc': {"comments.$.likes": -1},
+    #                                                   '$addToSet': {'likedBy': userID}})
+    #     return {}, 200
+
+
 class PostCommentByID(AppResource):
 
     def __init__(self):
         pass
 
+    def put(self, postID, type):
+        timeStamp = int(request.args['ts'])
+        userID = (request.args['userID'])
+        get_commentDB_reference(type).update_one({'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
+                                                     {'$inc': {"comments.$.likes": 1},
+                                                      '$addToSet': {'comments.$.likedBy': userID}},upsert=True)
+        return {}, 200
+
     def post(self, postID, type):
         commentDict = request.get_json(force=True)
         get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': 1}})
         doc_id = get_commentDB_reference(type).update_one({'_id': ObjectId(postID)},
-                                                      {'$addToSet': {'comments': commentDict}},
-                                                      upsert=True)
+                                                          {'$addToSet': {'comments': commentDict}},
+                                                          upsert=True)
         return {}, 200
 
     def get(self, postID, type):
         output = []
-        comments = list(get_commentDB_reference(type).find({'_id': ObjectId(postID)}))
-        if len(comments) == 0:
-            return [], 200
-        for i in comments:
-            output = i['comments']
-        return output, 200
-
-    def delete(self, postID, type):
-        get_commentDB_reference(type).delete_one({'_id': ObjectId(postID)})
-        get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': -1}})
-        return {}, 200
+        comments = get_commentDB_reference(type).find_one({'_id': ObjectId(postID)})
+        if comments is None:
+            return [],200
+        if 'comments' not in comments:
+            return [],200
+        return comments['comments'], 200

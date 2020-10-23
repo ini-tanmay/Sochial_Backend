@@ -24,15 +24,12 @@ class Post(AppResource):
 
     def post(self, type):
         userID = request.args['userID']
-        # self.users.update_one({'_id':userID},{'$inc':{'posts':1}})
+        self.users.update_one({'_id':userID},{'$inc':{'posts':1}})
         postDict = request.get_json(force=True)
         rawFollowers=self.followersRef.find_one({'_id':userID},{'followersList.userID':1})
-        userids=[]
-        for i in rawFollowers['followersList']:
-            userids.append(i['userID'])
-        self.followingRef.update({'_id': {'$in': userids}},{'$addToSet':{'feed':postDict}})
-        # doc_id = get_db_reference(type).insert_one(postDict).inserted_id
-        return rawFollowers, 200
+        self.followingRef.update({'_id': {'$in': rawFollowers['followersList']}},{'$addToSet':{'feed':postDict}},upsert=True,multi=True)
+        doc_id = get_db_reference(type).insert_one(postDict).inserted_id
+        return {}, 200
 
     def get(self, type):
         # if last id is null return first few items upto the limit
