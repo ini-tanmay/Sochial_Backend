@@ -55,28 +55,29 @@ app.config["SCOUT_NAME"] = "Sochial"
 from api import *
 
 
-
 @app.route('/api/v1.0/user/id/<string:userID>/followers/<int:last_no>', endpoint='get_followers')
 @authenticate
 def get_followers_list(userID, last_no):
-    output = []
     followers = mongo.db.followers
     # user = followers.find_one({'_id': userID}, {'followersList': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
-    user = followers.find_one({'_id': userID})
-    output=user['followersList']
-    app.logger.info((user))
-    return jsonify(output)
+    output= followers.find_one({'_id': userID})
+    if output is None:
+        return jsonify([])
+    if 'followersList' not in output:
+        return jsonify([])
+    return jsonify(output['followersList'])
 
 
 @app.route('/api/v1.0/user/id/<string:userID>/following/<int:last_no>', endpoint='get_following')
 @authenticate
 def get_following_list(userID, last_no):
-    output = []
     following = mongo.db.following
-    users = following.find({'_id': userID}, {'followingList': {'$slice': [last_no * 30, (last_no + 1) * 30]}})
-    for i in users:
-        output.append(i['followingList'])
-    return jsonify(output)
+    output= following.find_one({'_id': userID})
+    if output is None:
+        return jsonify([])
+    if 'followingList' not in output:
+        return jsonify([])
+    return jsonify(output['followingList'])
 
 
 @app.route('/api/v1.0/user/id/<string:myUserID>/follows/<string:otherUserID>/check', endpoint='check_if_i_f_o')
@@ -84,7 +85,9 @@ def get_following_list(userID, last_no):
 def does_user_follow_otherUser(myUserID, otherUserID):
     following = mongo.db.following
     user = following.find_one({'_id': myUserID}, {'followingList': {'$elemMatch': {'userID': otherUserID}}})
-    if user is not None:
+    if user is None:
+        return jsonify(False)
+    if 'followingList' in user:
         return jsonify(True)
     return jsonify(False)
 

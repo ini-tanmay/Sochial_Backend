@@ -27,8 +27,9 @@ class Post(AppResource):
         self.users.update_one({'_id':userID},{'$inc':{'posts':1}})
         postDict = request.get_json(force=True)
         rawFollowers=self.followersRef.find_one({'_id':userID},{'followersList.userID':1})
-        self.followingRef.update({'_id': {'$in': rawFollowers['followersList']}},{'$addToSet':{'feed':postDict}},upsert=True,multi=True)
         doc_id = get_db_reference(type).insert_one(postDict).inserted_id
+        postDict['_id']=doc_id
+        self.followingRef.update({'_id': {'$in': rawFollowers['followersList']}},{'$addToSet':{'feed':postDict}},upsert=True,multi=True)
         return {}, 200
 
     def get(self, type):
