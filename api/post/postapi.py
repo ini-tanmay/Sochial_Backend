@@ -59,7 +59,10 @@ class Post(AppResource):
             try:
                 lastDocumentID = request.args['last_id']
             except:
-                firstPosts = get_db_reference(type).find(sort=[('likes', pymongo.DESCENDING)]).limit(limit)
+                dt = datetime.utcnow() - timedelta(days=3,hours=12)
+                objID=ObjectId.from_datetime(dt)
+                app.logger.info(objID)
+                firstPosts = get_db_reference(type).find({'_id':{'$gt':ObjectId(objID)}},sort=[('likes', pymongo.DESCENDING)]).limit(limit)
                 for i in firstPosts:
                     i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
                     output.append(i)
@@ -77,4 +80,3 @@ class Post(AppResource):
 
     def delete(self, type):
         pass
-        # self.users.update_one({'_id':userID},{'$inc':{'posts':-1}})

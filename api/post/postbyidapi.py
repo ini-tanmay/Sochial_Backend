@@ -39,5 +39,8 @@ class PostByID(AppResource):
         return {}, 200
 
     def delete(self, type, postID):
+        userID=request.args['userID']
+        users=mongo.db.users
+        users.update_one({'_id':userID},{'$inc':{'posts':-1}})
         get_db_reference(type).delete_one({'_id': ObjectId(postID)})
         return {}, 200

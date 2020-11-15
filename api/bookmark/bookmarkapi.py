@@ -18,19 +18,12 @@ class Bookmark(AppResource):
         return {}, 200
 
     def get(self, userID):
-        last_no = 0
-        output = []
-        posts = self.dbRef.find({'_id': userID})
-        for i in posts:
-            app.logger.info(i)
-            try:
-                app.logger.info(i['bookmarkedPosts'])
-                output.append(i['bookmarkedPosts'])
-            except:
-                return {}, 365
-        if posts.count() <= 0:
-            return {}, 365
-        return output[0], 200
+        bookmarks = self.dbRef.find_one({'_id': userID})
+        if bookmarks is None:
+            return [], 200
+        if 'bookmarkedPosts' not in bookmarks:
+            return [], 200
+        return bookmarks['bookmarkedPosts'], 200
 
     def delete(self, userID):
         postID = request.args['postID']

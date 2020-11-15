@@ -25,7 +25,6 @@ def get_commentDB_reference(type):
     elif type == 'prompt':
         return mongo.db.prompts.comments
 
-
     # def put(self, postID, type):
     #     timeStamp = int(request.args['ts'])
     #     userID = int(request.args['userID'])
@@ -50,23 +49,43 @@ class PostCommentByID(AppResource):
         timeStamp = int(request.args['ts'])
         userID = (request.args['userID'])
         get_commentDB_reference(type).update_one({'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
-                                                     {'$inc': {"comments.$.likes": 1},
-                                                      '$addToSet': {'comments.$.likedBy': userID}},upsert=True)
+                                                 {'$inc': {"comments.$.likes": 1},
+                                                  '$addToSet': {'comments.$.likedBy': userID}}, upsert=True)
         return {}, 200
 
     def post(self, postID, type):
         commentDict = request.get_json(force=True)
+        otherFcmToken = request.args['server_log']
         get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': 1}})
         doc_id = get_commentDB_reference(type).update_one({'_id': ObjectId(postID)},
                                                           {'$addToSet': {'comments': commentDict}},
                                                           upsert=True)
+        headers = request.headers
+        decoded_token = auth.verify_id_token(headers['Authorization'])
+        uid = decoded_token['uid']
+        if commentDict['userID']!=uid:
+            NotificationService().send_custom_message(otherFcmToken,'@'+ commentDict['usern']+' commented on your post', commentDict['text'][0:max(len(commentDict['text']),50)]+'...')
         return {}, 200
 
     def get(self, postID, type):
         output = []
         comments = get_commentDB_reference(type).find_one({'_id': ObjectId(postID)})
         if comments is None:
-            return [],200
+            return [], 200
         if 'comments' not in comments:
-            return [],200
+            return [], 200
+        app.logger.info(comments)
+        for i in comments['comments']:
+            if 'replies' in i:
+                for x in i['replies']:
+                    x['pts']=i['ts']
+
         return comments['comments'], 200
+
+    def delete(self, postID, type):
+        timeStamp = int(request.args['ts'])
+        get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': -1}})
+        get_commentDB_reference(type).update_one({'_id': ObjectId(postID)},
+                                                 {'$pull': {'comments': {'ts': timeStamp}}})
+
+        return {}, 200

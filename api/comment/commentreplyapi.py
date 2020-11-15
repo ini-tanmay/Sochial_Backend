@@ -1,5 +1,6 @@
 from api.wrap.auth import AppResource
 import logging as logger
+from firebase_admin import auth
 from app import *
 import pymongo
 
@@ -32,25 +33,43 @@ class CommentReplyByID(AppResource):
         pass
 
     def put(self, postID, type, timeStamp):
-        rts=int(request.args['rts'])
-        action= 'like' #(request.args['action'])
-        if action=='like':
-            get_commentDB_reference(type).update_one({'$and':[{'_id':ObjectId(postID)}, {"comments.ts":timeStamp },{'comments.$.replies.ts':rts}]}, {'$inc': {"comments.$.replies.likes": 1},'addToSet':{'comments.$[].replies.likedBy'}})
-        elif action=='dislike':
-            get_commentDB_reference(type).update_one({'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
-                                                     {'$inc': {"comments.$.likes": -1}})
-        return {},200
+        # rts=int(request.args['rts'])
+        # action= 'like' #(request.args['action'])
+        # if action=='like':
+        #     get_commentDB_reference(type).update_one({'$and':[{'_id':ObjectId(postID)}, {"comments.ts":timeStamp },{'comments.$.replies.ts':rts}]}, {'$inc': {"comments.$.replies.likes": 1},'addToSet':{'comments.$[].replies.likedBy'}})
+        # elif action=='dislike':
+        #     get_commentDB_reference(type).update_one({'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
+        #                                              {'$inc': {"comments.$.likes": -1}})
+        return {}, 200
 
-    def post(self, postID, type,timeStamp):
+    def post(self, postID, type, timeStamp):
         commentDict = request.get_json(force=True)
+        otherFcmToken = request.args['server_log']
         app.logger.info(commentDict)
         app.logger.info(postID)
         app.logger.info(type)
         app.logger.info(timeStamp)
-        # get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'i': 1}})
-        doc_id = get_commentDB_reference(type).update_one({'$and':[{'_id':ObjectId(postID)}, {"comments.ts":timeStamp}]},
-                                                      {'$addToSet': {'comments.$.replies': commentDict}},
-                                                      upsert=True)
+        get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': 1}})
+        doc_id = get_commentDB_reference(type).update_one(
+            {'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
+            {'$addToSet': {'comments.$.replies': commentDict}},
+            upsert=True)
+        headers = request.headers
+        decoded_token = auth.verify_id_token(headers['Authorization'])
+        uid = decoded_token['uid']
+        if commentDict['userID']!=uid:
+            NotificationService().send_custom_message(otherFcmToken,
+                                                  '@' + commentDict['usern'] + ' replied to your comment',
+                                                  commentDict['text'][0:max(len(commentDict['text']), 50)] + '...')
         return {}, 200
 
-
+    def delete(self, postID, type, timeStamp):
+            app.logger.info(timeStamp)
+            app.logger.info(postID)
+            app.logger.info(type)
+            rts = int(request.args['rts'])
+            app.logger.info(rts)
+            get_db_reference(type).update_one({'_id': ObjectId(postID)}, {'$inc': {'comments': -1}})
+            get_commentDB_reference(type).update_one({'$and': [{'_id': ObjectId(postID)}, {"comments.ts": timeStamp}]},
+                                                     {'$pull': {'comments.$.replies': {'ts': rts}}})
+            return {}, 200

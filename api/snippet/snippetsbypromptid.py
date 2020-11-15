@@ -13,20 +13,22 @@ class SnippetsByPromptID(AppResource):
 
     def post(self, promptID):
         # add a snippet
+        prompts = mongo.db.prompts
         snippetDict = request.get_json(force=True)
-        self.snippetsRef.update({'_id': ObjectId(promptID)},
-                                {'$addToSet': {'snippets': snippetDict}}, upsert=True)
+        prompts.update_one({'_id': ObjectId(promptID)}, {'$inc': {'snippets': 1}})
+        self.snippetsRef.update_one({'_id': ObjectId(promptID)},
+                                    {'$addToSet': {'snippets': snippetDict}}, upsert=True)
         return {}, 200
 
     def get(self, promptID):
-        limit=int(request.args['limit'])
+        limit = int(request.args['limit'])
         page_no = int(request.args['page_no'])
         snippets = self.snippetsRef.find_one({'_id': ObjectId(promptID)},
                                              {'snippets': {'$slice': [page_no * limit, (page_no + 1) * limit]}})
         if snippets is None:
-            return [],200
+            return [], 200
         if 'snippets' not in snippets:
-            return [],200
+            return [], 200
         return snippets['snippets'], 200
 
     def put(self, promptID):

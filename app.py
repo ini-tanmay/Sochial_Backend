@@ -95,6 +95,9 @@ def does_user_follow_otherUser(myUserID, otherUserID):
 @app.route('/api/v1.0/user/id/<string:userID>/l/<string:type>/id/<string:postID>', methods=['PUT'])
 @authenticate
 def incrementLikes(userID, postID, type):
+    otherFcmToken = request.args['server_log']
+    username = request.args['usern']
+    title = request.args['title']
     if (type == 'blog'):
         if get_db_reference(type).find_one({'$and': [{'dislikedBy': userID}, {'_id':ObjectId(postID)}]}) is not None:
             get_db_reference(type).update({'_id': ObjectId(postID)},
@@ -102,6 +105,8 @@ def incrementLikes(userID, postID, type):
         get_db_reference(type).update({'_id': ObjectId(postID)},
                                       {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
         return jsonify(True)
+    NotificationService().send_custom_message(otherFcmToken,'@'+username + ' liked your '+type+' titled: '+title,
+                                              'Open the app to see more')
     get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
     return jsonify([])
 
@@ -304,7 +309,6 @@ def is_username_taken(username):
         return jsonify(False)
     else:
         return jsonify(True)
-
 
 @app.route('/')
 def hello():
