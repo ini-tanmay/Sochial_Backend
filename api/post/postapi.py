@@ -59,7 +59,7 @@ class Post(AppResource):
             try:
                 lastDocumentID = request.args['last_id']
             except:
-                dt = datetime.utcnow() - timedelta(days=3,hours=12)
+                dt = datetime.utcnow() - timedelta(days=7,hours=12)
                 objID=ObjectId.from_datetime(dt)
                 app.logger.info(objID)
                 firstPosts = get_db_reference(type).find({'_id':{'$gt':ObjectId(objID)}},sort=[('likes', pymongo.DESCENDING)]).limit(limit)
