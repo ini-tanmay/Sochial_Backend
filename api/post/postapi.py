@@ -48,7 +48,7 @@ class Post(AppResource):
                     i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
                     output.append(i)
                 return output, 200
-            posts = get_db_reference(type).find({'_id': {'$gt': ObjectId((lastDocumentID))}}).sort('_id',
+            posts = get_db_reference(type).find({'_id': {'$lt': ObjectId((lastDocumentID))}}).sort('_id',
                                                                                                    pymongo.DESCENDING).limit(
                 limit)
             for i in posts:
@@ -62,7 +62,7 @@ class Post(AppResource):
                 dt = datetime.utcnow() - timedelta(days=7,hours=12)
                 objID=ObjectId.from_datetime(dt)
                 app.logger.info(objID)
-                firstPosts = get_db_reference(type).find({'_id':{'$gt':ObjectId(objID)}},sort=[('likes', pymongo.DESCENDING)]).limit(limit)
+                firstPosts = get_db_reference(type).find({'_id':{'$lt':ObjectId(objID)}},sort=[('likes', pymongo.DESCENDING)]).limit(limit)
                 for i in firstPosts:
                     i['timeStamp'] = int(ObjectId(i['_id']).generation_time.timestamp() * 1000)
                     output.append(i)

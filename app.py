@@ -102,12 +102,12 @@ def incrementLikes(userID, postID, type):
         if get_db_reference(type).find_one({'$and': [{'dislikedBy': userID}, {'_id':ObjectId(postID)}]}) is not None:
             get_db_reference(type).update({'_id': ObjectId(postID)},
                                           {'$inc': {'dislikes': -1}, '$pull': {'dislikedBy': userID}})
-        get_db_reference(type).update({'_id': ObjectId(postID)},
-                                      {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
+        # get_db_reference(type).update({'_id': ObjectId(postID)},
+        #                               {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
         return jsonify(True)
     NotificationService().send_custom_message(otherFcmToken,'@'+username + ' liked your '+type+' titled: '+title,
                                               'Open the app to see more')
-    get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}})
+    get_db_reference(type).update({'_id': ObjectId(postID)}, {'$inc': {'likes': 1}, '$addToSet': {'likedBy': userID}},upsert=True)
     return jsonify([])
 
 
@@ -277,13 +277,13 @@ def myuser_follows_otheruser():
     otherUserDict = dict(request.get_json(force=True))['other']
     users.update_one({'_id': myUserDict['userID']}, {'$inc': {'following': 1}})
     users.update_one({'_id': otherUserDict['userID']}, {'$inc': {'followers': 1}})
-    NotificationService().send_message(otherFcmToken, myUserDict['name'], myUserDict['usern'])
     followers.update_one({'_id': (otherUserDict['userID'])},
                          {'$addToSet': {'followersList': myUserDict}},
                          upsert=True)
     following.update_one({'_id': (myUserDict['userID'])},
                          {'$addToSet': {'followingList': otherUserDict}},
                          upsert=True)
+    NotificationService().send_message(otherFcmToken, myUserDict['name'], myUserDict['usern'])
     return jsonify(True)
 
 
